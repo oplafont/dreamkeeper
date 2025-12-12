@@ -219,7 +219,7 @@ class _SettingsAndProfileState extends State<SettingsAndProfile>
   void _showHelpDialog() {
     showAboutDialog(
       context: context,
-      applicationName: 'DreamKeeper',
+      applicationName: 'DreamDecoder',
       applicationVersion: '1.0.0',
       applicationIcon: Icon(
         Icons.nights_stay,
@@ -498,7 +498,7 @@ class _SettingsAndProfileState extends State<SettingsAndProfile>
   void _showAboutDialog() {
     showAboutDialog(
       context: context,
-      applicationName: 'DreamKeeper',
+      applicationName: 'DreamDecoder',
       applicationVersion: '1.0.0',
       applicationIcon: Icon(
         Icons.nights_stay,

@@ -12,7 +12,7 @@ class CloudStorageWidget extends StatefulWidget {
 }
 
 class _CloudStorageWidgetState extends State<CloudStorageWidget> {
-  String _selectedPath = '/DreamKeeper/Exports';
+  String _selectedPath = '/DreamDecoder/Exports';
   bool _createFolder = true;
   Map<String, bool> _serviceStatus = {
     'Google Drive': true,
@@ -57,8 +57,8 @@ class _CloudStorageWidgetState extends State<CloudStorageWidget> {
   ];
 
   final List<String> _folderPaths = [
-    '/DreamKeeper/Exports',
-    '/Documents/DreamKeeper',
+    '/DreamDecoder/Exports',
+    '/Documents/DreamDecoder',
     '/Health/Dream Analysis',
     '/Personal/Dreams',
     'Custom Path...',
@@ -150,13 +150,12 @@ class _CloudStorageWidgetState extends State<CloudStorageWidget> {
                         });
                       }
                     },
-                    items:
-                        _folderPaths.map((path) {
-                          return DropdownMenuItem(
-                            value: path,
-                            child: Text(path),
-                          );
-                        }).toList(),
+                    items: _folderPaths.map((path) {
+                      return DropdownMenuItem(
+                        value: path,
+                        child: Text(path),
+                      );
+                    }).toList(),
                   ),
                 ),
 
@@ -407,160 +406,158 @@ class _CloudStorageWidgetState extends State<CloudStorageWidget> {
     // Show confirmation dialog
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_upload,
+                color: _getServiceColor(serviceName),
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Upload to $serviceName',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Your export will be saved to:\n$_selectedPath${_createFolder ? '/2024-01' : ''}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
                 children: [
-                  Icon(
-                    Icons.cloud_upload,
-                    color: _getServiceColor(serviceName),
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Upload to $serviceName',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white70),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Your export will be saved to:\n$_selectedPath${_createFolder ? '/2024-01' : ''}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(
+                          context,
+                        ); // Close the cloud storage sheet
+                        widget.onCloudServiceTap(serviceName);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _getServiceColor(serviceName),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Upload'),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white70,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.pop(
-                              context,
-                            ); // Close the cloud storage sheet
-                            widget.onCloudServiceTap(serviceName);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _getServiceColor(serviceName),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Upload'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
   void _connectService(String serviceName) {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.link,
+                color: _getServiceColor(serviceName),
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Connect $serviceName',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You will be redirected to $serviceName to authorize access. Your credentials are never stored by DreamDecoder.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
                 children: [
-                  Icon(
-                    Icons.link,
-                    color: _getServiceColor(serviceName),
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Connect $serviceName',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white70),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'You will be redirected to $serviceName to authorize access. Your credentials are never stored by DreamKeeper.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Simulate connection
+                        setState(() {
+                          _serviceStatus[serviceName] = true;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Connected to $serviceName successfully',
+                            ),
+                            backgroundColor: const Color(0xFF10B981),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _getServiceColor(serviceName),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Connect'),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white70,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            // Simulate connection
-                            setState(() {
-                              _serviceStatus[serviceName] = true;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Connected to $serviceName successfully',
-                                ),
-                                backgroundColor: const Color(0xFF10B981),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _getServiceColor(serviceName),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Connect'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
@@ -569,78 +566,76 @@ class _CloudStorageWidgetState extends State<CloudStorageWidget> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Custom Folder Path',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: pathController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: '/path/to/folder',
+                  hintStyle: TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: Color(0xFF312E81),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
                 children: [
-                  const Text(
-                    'Custom Folder Path',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white70),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: pathController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      hintText: '/path/to/folder',
-                      hintStyle: TextStyle(color: Colors.white60),
-                      filled: true,
-                      fillColor: Color(0xFF312E81),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        borderSide: BorderSide.none,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedPath = pathController.text.isNotEmpty
+                              ? pathController.text
+                              : '/DreamDecoder/Exports';
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
                       ),
+                      child: const Text('Save'),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white70,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedPath =
-                                  pathController.text.isNotEmpty
-                                      ? pathController.text
-                                      : '/DreamKeeper/Exports';
-                            });
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF8B5CF6),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Save'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 

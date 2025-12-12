@@ -384,7 +384,7 @@ class _DataManagementWidgetState extends State<DataManagementWidget> {
 
       final jsonString = json.encode(backupData);
       final filename =
-          'dreamkeeper_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+          'dreamdecoder_backup_${DateTime.now().millisecondsSinceEpoch}.json';
 
       await _downloadFile(jsonString, filename);
 
@@ -421,11 +421,7 @@ class _DataManagementWidgetState extends State<DataManagementWidget> {
           bytes = await File(result.files.first.path!).readAsBytes();
         }
 
-        if (bytes == null) {
-          throw Exception('Unable to read file data');
-        }
-
-        final jsonString = utf8.decode(bytes);
+        final jsonString = utf8.decode(bytes!);
         final backupData = json.decode(jsonString) as Map<String, dynamic>;
 
         // Validate backup data structure

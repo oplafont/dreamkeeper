@@ -149,7 +149,7 @@ class _SubscriptionManagementScreenState
               Icon(Icons.star, color: Colors.yellow, size: 24),
               SizedBox(width: 8),
               Text(
-                'DreamKeeper Pro Active',
+                'DreamDecoder Pro Active',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 20.sp,
@@ -408,7 +408,7 @@ class _SubscriptionManagementScreenState
           ),
           SizedBox(height: 12),
           Text(
-            'You are currently using the free version of DreamKeeper.',
+            'You are currently using the free version of DreamDecoder.',
             style: GoogleFonts.inter(
               color: Colors.grey[300],
               fontSize: 16.sp,
@@ -443,7 +443,7 @@ class _SubscriptionManagementScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Upgrade to DreamKeeper Pro',
+            'Upgrade to DreamDecoder Pro',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 22.sp,
@@ -638,7 +638,7 @@ class _SubscriptionManagementScreenState
             style: GoogleFonts.inter(color: Colors.white),
           ),
           content: Text(
-            'To update your payment method, please contact our support team at support@dreamkeeper.app or through the help section.',
+            'To update your payment method, please contact our support team at support@dreamdecoder.app or through the help section.',
             style: GoogleFonts.inter(color: Colors.grey[300]),
           ),
           actions: [

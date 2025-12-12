@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import '../calendar_view/calendar_view.dart';
@@ -79,6 +78,7 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           setState(() {
             _currentIndex = index;
@@ -105,8 +105,10 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
         child: SafeArea(
           child: Container(
-            height: 8.h,
+            height: 65,
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children:
                   _navItems.asMap().entries.map((entry) {
                     final index = entry.key;
@@ -114,42 +116,50 @@ class _MainNavigationState extends State<MainNavigation> {
                     final isSelected = _currentIndex == index;
 
                     return Expanded(
-                      child: GestureDetector(
-                        onTap: () => _onTabSelected(index),
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 1.h),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isSelected
-                                    ? (item.activeIcon as Icon).icon
-                                    : (item.icon as Icon).icon,
-                                color:
-                                    isSelected
-                                        ? AppTheme.textWhite
-                                        : AppTheme.textMediumGray,
-                                size: 5.w,
-                              ),
-                              SizedBox(height: 0.5.h),
-                              Text(
-                                item.label!,
-                                style: TextStyle(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _onTabSelected(index),
+                          borderRadius: BorderRadius.circular(12),
+                          splashColor: AppTheme.accentPurple.withAlpha(51),
+                          highlightColor: AppTheme.accentPurple.withAlpha(26),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isSelected
+                                      ? (item.activeIcon as Icon).icon
+                                      : (item.icon as Icon).icon,
                                   color:
                                       isSelected
                                           ? AppTheme.textWhite
                                           : AppTheme.textMediumGray,
-                                  fontSize: 10.sp,
-                                  fontWeight:
-                                      isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
+                                  size: 26,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                                SizedBox(height: 4),
+                                Text(
+                                  item.label!,
+                                  style: TextStyle(
+                                    color:
+                                        isSelected
+                                            ? AppTheme.textWhite
+                                            : AppTheme.textMediumGray,
+                                    fontSize: 11,
+                                    fontWeight:
+                                        isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -161,14 +171,18 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
       floatingActionButton:
           _currentIndex == 0
-              ? FloatingActionButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.dreamEntryCreation);
-                },
-                backgroundColor: AppTheme.accentPurple,
-                foregroundColor: AppTheme.textWhite,
-                elevation: 6,
-                child: Icon(Icons.add, size: 6.w, color: AppTheme.textWhite),
+              ? Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.dreamEntryCreation);
+                  },
+                  backgroundColor: AppTheme.accentPurple,
+                  foregroundColor: AppTheme.textWhite,
+                  elevation: 6,
+                  heroTag: 'add_dream_fab',
+                  child: Icon(Icons.add, size: 28, color: AppTheme.textWhite),
+                ),
               )
               : null,
     );

@@ -41,7 +41,7 @@ class _SubscriptionCheckoutScreenState
       await PaymentService.initialize();
       _prefillUserData();
       setState(() {
-        _message = 'Ready to subscribe to DreamKeeper Pro!';
+        _message = 'Ready to subscribe to DreamDecoder Pro!';
       });
     } catch (e) {
       setState(() {
@@ -65,7 +65,7 @@ class _SubscriptionCheckoutScreenState
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          'Subscribe to DreamKeeper Pro',
+          'Subscribe to DreamDecoder Pro',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 20.sp,
@@ -97,7 +97,7 @@ class _SubscriptionCheckoutScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DreamKeeper Pro',
+                      'DreamDecoder Pro',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24.sp,
@@ -378,7 +378,7 @@ class _SubscriptionCheckoutScreenState
                           ],
                         )
                       : Text(
-                          'Subscribe to DreamKeeper Pro - \$8.00/month',
+                          'Subscribe to DreamDecoder Pro - \$8.00/month',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -499,7 +499,7 @@ class _SubscriptionCheckoutScreenState
           SizedBox(height: 12),
           _buildDisclaimerItem(
             'Medical Disclaimer:',
-            'DreamKeeper is not a medical device. AI insights are for entertainment and self-reflection only. Always consult healthcare professionals for medical concerns.',
+            'DreamDecoder is not a medical device. AI insights are for entertainment and self-reflection only. Always consult healthcare professionals for medical concerns.',
           ),
           _buildDisclaimerItem(
             'Liability Waiver:',
@@ -583,7 +583,7 @@ class _SubscriptionCheckoutScreenState
 
       final subscriptionResponse =
           await PaymentService.instance.createSubscription(
-        planId: 'dreamkeeper_pro', // This would be retrieved from the database
+        planId: 'dreamdecoder_pro', // This would be retrieved from the database
         billingDetails: billingDetails,
       );
 
@@ -627,7 +627,7 @@ class _SubscriptionCheckoutScreenState
               Icon(Icons.check_circle, color: Colors.green, size: 28),
               SizedBox(width: 12),
               Text(
-                'Welcome to DreamKeeper Pro!',
+                'Welcome to DreamDecoder Pro!',
                 style: GoogleFonts.inter(color: Colors.white),
               ),
             ],

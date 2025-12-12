@@ -233,7 +233,7 @@ BEGIN
     INSERT INTO public.subscription_plans (id, name, description, price_amount, price_currency, billing_interval, features)
     VALUES (
         pro_plan_id,
-        'DreamKeeper Pro',
+        'DreamDecoder Pro',
         'Full access to all dream analysis features, unlimited dream entries, AI insights, and advanced analytics.',
         8.00,
         'usd',
@@ -244,19 +244,19 @@ BEGIN
     -- Insert legal disclaimers
     INSERT INTO public.legal_disclaimers (id, type, title, content, version, is_active) VALUES
     (terms_disclaimer_id, 'terms_of_service', 'Terms of Service', 
-     'By using DreamKeeper, you agree to our terms and conditions. This service is provided as-is for personal use only. You are responsible for the accuracy of your dream entries and personal data. We reserve the right to modify these terms at any time with notice.', 
+     'By using DreamDecoder, you agree to our terms and conditions. This service is provided as-is for personal use only. You are responsible for the accuracy of your dream entries and personal data. We reserve the right to modify these terms at any time with notice.', 
      1, true),
     
     (privacy_disclaimer_id, 'privacy_policy', 'Privacy Policy', 
-     'DreamKeeper respects your privacy. We collect and store your dream entries, usage data, and personal information to provide our services. Your data is encrypted and never shared with third parties without consent. You may request data deletion at any time.', 
+     'DreamDecoder respects your privacy. We collect and store your dream entries, usage data, and personal information to provide our services. Your data is encrypted and never shared with third parties without consent. You may request data deletion at any time.', 
      1, true),
     
     (medical_disclaimer_id, 'medical_disclaimer', 'Medical Disclaimer', 
-     'DreamKeeper is not a medical device or diagnostic tool. The AI insights and analysis provided are for entertainment and self-reflection purposes only. Do not use this app as a substitute for professional medical, psychological, or psychiatric advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical concerns.', 
+     'DreamDecoder is not a medical device or diagnostic tool. The AI insights and analysis provided are for entertainment and self-reflection purposes only. Do not use this app as a substitute for professional medical, psychological, or psychiatric advice, diagnosis, or treatment. Always consult qualified healthcare professionals for medical concerns.', 
      1, true),
     
     (liability_disclaimer_id, 'liability_waiver', 'Liability Waiver', 
-     'By using DreamKeeper, you acknowledge that dream analysis and interpretation carry inherent risks of misunderstanding or misinterpretation. You use this service at your own risk. DreamKeeper and its creators are not liable for any decisions, actions, or outcomes based on app-generated insights or interpretations.', 
+     'By using DreamDecoder, you acknowledge that dream analysis and interpretation carry inherent risks of misunderstanding or misinterpretation. You use this service at your own risk. DreamDecoder and its creators are not liable for any decisions, actions, or outcomes based on app-generated insights or interpretations.', 
      1, true);
 
     RAISE NOTICE 'Subscription and legal system initialized successfully';

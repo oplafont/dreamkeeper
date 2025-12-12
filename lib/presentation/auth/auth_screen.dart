@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -156,19 +158,20 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      'DreamKeeper',
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      'DreamDecoder',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 1.h),
                     Text(
                       'REMember your nights, decode your days',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withAlpha(204),
-                          ),
+                        color: Colors.white.withAlpha(204),
+                      ),
                     ),
                   ],
                 ),
@@ -215,33 +218,40 @@ class _AuthScreenState extends State<AuthScreen>
                                   padding: EdgeInsets.symmetric(vertical: 3.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
-                                    color: _tabController.index == 0
-                                        ? AppTheme.darkTheme.colorScheme.primary
-                                        : Colors.transparent,
-                                    boxShadow: _tabController.index == 0
-                                        ? [
-                                            BoxShadow(
-                                              color: AppTheme
-                                                  .darkTheme.colorScheme.primary
-                                                  .withAlpha(77),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
+                                    color:
+                                        _tabController.index == 0
+                                            ? AppTheme
+                                                .darkTheme
+                                                .colorScheme
+                                                .primary
+                                            : Colors.transparent,
+                                    boxShadow:
+                                        _tabController.index == 0
+                                            ? [
+                                              BoxShadow(
+                                                color: AppTheme
+                                                    .darkTheme
+                                                    .colorScheme
+                                                    .primary
+                                                    .withAlpha(77),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                            : null,
                                   ),
                                   child: Center(
                                     child: Text(
                                       'Sign In',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: _tabController.index == 0
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium?.copyWith(
+                                        color:
+                                            _tabController.index == 0
                                                 ? Colors.white
                                                 : Colors.grey.shade600,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -260,33 +270,40 @@ class _AuthScreenState extends State<AuthScreen>
                                   padding: EdgeInsets.symmetric(vertical: 3.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
-                                    color: _tabController.index == 1
-                                        ? AppTheme.darkTheme.colorScheme.primary
-                                        : Colors.transparent,
-                                    boxShadow: _tabController.index == 1
-                                        ? [
-                                            BoxShadow(
-                                              color: AppTheme
-                                                  .darkTheme.colorScheme.primary
-                                                  .withAlpha(77),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
+                                    color:
+                                        _tabController.index == 1
+                                            ? AppTheme
+                                                .darkTheme
+                                                .colorScheme
+                                                .primary
+                                            : Colors.transparent,
+                                    boxShadow:
+                                        _tabController.index == 1
+                                            ? [
+                                              BoxShadow(
+                                                color: AppTheme
+                                                    .darkTheme
+                                                    .colorScheme
+                                                    .primary
+                                                    .withAlpha(77),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                            : null,
                                   ),
                                   child: Center(
                                     child: Text(
                                       'Sign Up',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: _tabController.index == 1
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium?.copyWith(
+                                        color:
+                                            _tabController.index == 1
                                                 ? Colors.white
                                                 : Colors.grey.shade600,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -300,10 +317,7 @@ class _AuthScreenState extends State<AuthScreen>
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
-                          children: [
-                            _buildSignInForm(),
-                            _buildSignUpForm(),
-                          ],
+                          children: [_buildSignInForm(), _buildSignUpForm()],
                         ),
                       ),
                     ],
@@ -330,40 +344,111 @@ class _AuthScreenState extends State<AuthScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Demo Credentials Section
+          // Demo Credentials Section with improved visual hierarchy
           Container(
-            padding: EdgeInsets.all(3.w),
-            margin: EdgeInsets.only(bottom: 4.h),
+            padding: EdgeInsets.all(3.5.w),
+            margin: EdgeInsets.only(bottom: 2.h),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue.shade50,
+                  Colors.blue.shade100.withAlpha(128),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.blue.shade300, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.shade100.withAlpha(128),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Demo Credentials',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.blue.shade800,
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(2.w),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade700,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                        size: 4.w,
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
+                    Text(
+                      'Demo Credentials',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.blue.shade900,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 1.h),
-                Text(
-                  'Dreamer: dreamer@example.com / dreampass123',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.blue.shade700,
-                        fontFamily: 'Courier',
+                SizedBox(height: 1.5.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(179),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dreamer: dreamer@example.com / dreampass123',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.blue.shade900,
+                          fontFamily: 'Courier',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                      SizedBox(height: 0.5.h),
+                      Text(
+                        'Analyst: analyst@example.com / analyzepass123',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.blue.shade900,
+                          fontFamily: 'Courier',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 0.5.h),
-                Text(
-                  'Analyst: analyst@example.com / analyzepass123',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.blue.shade700,
-                        fontFamily: 'Courier',
-                      ),
+              ],
+            ),
+          ),
+
+          // Visual separator with label
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 2.h),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Divider(color: Colors.grey.shade300, thickness: 1),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 3.w),
+                  child: Text(
+                    'Sign In to Continue',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(color: Colors.grey.shade300, thickness: 1),
                 ),
               ],
             ),
@@ -375,8 +460,22 @@ class _AuthScreenState extends State<AuthScreen>
               labelText: 'Email Address',
               hintText: 'your.email@example.com',
               prefixIcon: const Icon(Icons.email_outlined),
+              filled: true,
+              fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppTheme.darkTheme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             keyboardType: TextInputType.emailAddress,
@@ -389,16 +488,31 @@ class _AuthScreenState extends State<AuthScreen>
             controller: _passwordController,
             decoration: InputDecoration(
               labelText: 'Password',
-              hintText: 'Create a secure password',
+              hintText: 'Enter your password',
               prefixIcon: const Icon(Icons.lock_outline),
+              filled: true,
+              fillColor: Colors.grey.shade50,
               suffixIcon: IconButton(
                 icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility),
-                onPressed: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed:
+                    () => setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppTheme.darkTheme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             obscureText: _obscurePassword,
@@ -415,20 +529,27 @@ class _AuthScreenState extends State<AuthScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.darkTheme.colorScheme.primary,
                 foregroundColor: Colors.white,
+                elevation: 3,
+                shadowColor: AppTheme.darkTheme.colorScheme.primary.withAlpha(
+                  128,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text('Sign In'),
+              child:
+                  _isLoading
+                      ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                      : const Text('Sign In'),
             ),
           ),
 
@@ -479,9 +600,10 @@ class _AuthScreenState extends State<AuthScreen>
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
                 icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility),
-                onPressed: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed:
+                    () => setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -498,11 +620,15 @@ class _AuthScreenState extends State<AuthScreen>
               hintText: 'Enter your password again',
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
-                icon: Icon(_obscureConfirmPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility),
-                onPressed: () => setState(
-                    () => _obscureConfirmPassword = !_obscureConfirmPassword),
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                ),
+                onPressed:
+                    () => setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -524,16 +650,19 @@ class _AuthScreenState extends State<AuthScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text('Create Account'),
+              child:
+                  _isLoading
+                      ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                      : const Text('Create Account'),
             ),
           ),
           const Spacer(),

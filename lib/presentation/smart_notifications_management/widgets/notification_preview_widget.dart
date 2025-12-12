@@ -155,7 +155,7 @@ class _NotificationPreviewWidgetState extends State<NotificationPreviewWidget>
                     Row(
                       children: [
                         Text(
-                          'DreamKeeper',
+                          'DreamDecoder',
                           style:
                               AppTheme.darkTheme.textTheme.bodyMedium?.copyWith(
                             color: AppTheme.textWhite,
@@ -289,7 +289,7 @@ class _NotificationPreviewWidgetState extends State<NotificationPreviewWidget>
       case 'weekly':
         return '📊 Your Weekly Dream Insights';
       default:
-        return 'DreamKeeper Notification';
+        return 'DreamDecoder Notification';
     }
   }
 
@@ -314,7 +314,7 @@ class _NotificationPreviewWidgetState extends State<NotificationPreviewWidget>
         }
         return '🌟 Weekly Update: 4 dreams captured this week! Your recall is improving. Tap to see insights.';
       default:
-        return 'DreamKeeper has something for you.';
+        return 'DreamDecoder has something for you.';
     }
   }
 

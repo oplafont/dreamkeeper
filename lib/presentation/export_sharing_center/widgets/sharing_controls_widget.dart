@@ -157,13 +157,12 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
                             _passwordStrength = value!;
                           });
                         },
-                        items:
-                            _passwordOptions.map((strength) {
-                              return DropdownMenuItem(
-                                value: strength,
-                                child: Text(strength),
-                              );
-                            }).toList(),
+                        items: _passwordOptions.map((strength) {
+                          return DropdownMenuItem(
+                            value: strength,
+                            child: Text(strength),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ),
@@ -214,13 +213,12 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
                             _expirationPeriod = value!;
                           });
                         },
-                        items:
-                            _expirationOptions.map((period) {
-                              return DropdownMenuItem(
-                                value: period,
-                                child: Text(period),
-                              );
-                            }).toList(),
+                        items: _expirationOptions.map((period) {
+                          return DropdownMenuItem(
+                            value: period,
+                            child: Text(period),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ),
@@ -413,106 +411,105 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
 
   void _generateSecureLink() {
     // Simulate link generation
-    const mockLink = 'https://dreamkeeper.app/share/abc123xyz';
+    const mockLink = 'https://dreamdecoder.app/share/abc123xyz';
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.link, color: Color(0xFF8B5CF6), size: 48),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Secure Link Generated',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF312E81),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            mockLink,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Clipboard.setData(
-                              const ClipboardData(text: mockLink),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Link copied to clipboard'),
-                                backgroundColor: Color(0xFF10B981),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.copy,
-                            color: Color(0xFF8B5CF6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_usePassword)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withAlpha(26),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.lock, color: Color(0xFF10B981), size: 16),
-                          SizedBox(width: 8),
-                          Text(
-                            'Password: DreamShare2024',
-                            style: TextStyle(
-                              color: Color(0xFF10B981),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Done'),
-                  ),
-                ],
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.link, color: Color(0xFF8B5CF6), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Secure Link Generated',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF312E81),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        mockLink,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          const ClipboardData(text: mockLink),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Link copied to clipboard'),
+                            backgroundColor: Color(0xFF10B981),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.copy,
+                        color: Color(0xFF8B5CF6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (_usePassword)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withAlpha(26),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.lock, color: Color(0xFF10B981), size: 16),
+                      SizedBox(width: 8),
+                      Text(
+                        'Password: DreamShare2024',
+                        style: TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Done'),
+              ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
@@ -521,77 +518,76 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.email, color: Color(0xFF3B82F6), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share via Email',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Enter email address',
+                  hintStyle: TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: Color(0xFF312E81),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
                 children: [
-                  const Icon(Icons.email, color: Color(0xFF3B82F6), size: 48),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Share via Email',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white70),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: emailController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter email address',
-                      hintStyle: TextStyle(color: Colors.white60),
-                      filled: true,
-                      fillColor: Color(0xFF312E81),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        borderSide: BorderSide.none,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        widget.onShareOptionTap(
+                          'Email: ${emailController.text}',
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        foregroundColor: Colors.white,
                       ),
+                      child: const Text('Send'),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white70,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            widget.onShareOptionTap(
-                              'Email: ${emailController.text}',
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B82F6),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Send'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 

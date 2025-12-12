@@ -59,7 +59,7 @@ class HelpSectionWidget extends StatelessWidget {
           _buildHelpTile(
             context,
             'App Tutorial',
-            'Learn how to use DreamKeeper',
+            'Learn how to use DreamDecoder',
             'school',
             _startTutorial,
           ),

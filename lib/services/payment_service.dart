@@ -48,7 +48,7 @@ class PaymentService {
     }
   }
 
-  /// Create subscription for DreamKeeper Pro
+  /// Create subscription for DreamDecoder Pro
   Future<PaymentIntentResponse> createSubscription({
     required String planId,
     required BillingDetails billingDetails,
@@ -152,7 +152,7 @@ class PaymentService {
         return PaymentResult(
           success: true,
           message:
-              'Payment completed successfully! Your DreamKeeper Pro subscription is now active.',
+              'Payment completed successfully! Your DreamDecoder Pro subscription is now active.',
           paymentIntentId: paymentIntent.id,
         );
       } else {

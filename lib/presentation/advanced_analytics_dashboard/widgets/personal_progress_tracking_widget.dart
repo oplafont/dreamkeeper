@@ -145,7 +145,7 @@ class _PersonalProgressTrackingWidgetState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Dream Keeper Level 7',
+                'Dream Decoder Level 7',
                 style: TextStyle(
                     color: Colors.amber,
                     fontSize: 14,

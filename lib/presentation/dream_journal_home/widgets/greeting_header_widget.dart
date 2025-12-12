@@ -7,7 +7,7 @@ class GreetingHeaderWidget extends StatelessWidget {
   final int streakCount;
 
   const GreetingHeaderWidget({Key? key, required this.streakCount})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +29,11 @@ class GreetingHeaderWidget extends StatelessWidget {
                   children: [
                     Text(
                       greeting,
-                      style: AppTheme.lightTheme.textTheme.headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.lightTheme.colorScheme.onSurface,
-                          ),
+                      style:
+                          AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.lightTheme.colorScheme.onSurface,
+                      ),
                     ),
                     SizedBox(height: 0.5.h),
                     Text(
@@ -172,7 +172,7 @@ class GreetingHeaderWidget extends StatelessWidget {
     } else if (streak < 30) {
       return "Amazing progress! Your dream awareness is growing stronger.";
     } else if (streak < 100) {
-      return "Incredible dedication! You're becoming a master dream keeper.";
+      return "Incredible dedication! You're becoming a master dream decoder.";
     } else {
       return "Legendary dreamer! Your subconscious journey is truly remarkable.";
     }

@@ -16,7 +16,7 @@ class ShareBottomSheetWidget extends StatelessWidget {
   final Map<String, dynamic> dreamData;
 
   const ShareBottomSheetWidget({Key? key, required this.dreamData})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +176,7 @@ $description
 Mood: $mood
 Tags: ${tags.join(', ')}
 
-Shared anonymously from DreamKeeper
+Shared anonymously from DreamDecoder
 ''';
 
     Share.share(shareText, subject: 'Dream: $title');
@@ -204,7 +204,7 @@ Sleep Quality: ${sleepQuality.toStringAsFixed(1)}/5.0
 Mood: $mood
 Tags: ${tags.join(', ')}
 
-Shared from DreamKeeper
+Shared from DreamDecoder
 ''';
 
     Share.share(shareText, subject: 'Dream: $title');
@@ -231,7 +231,7 @@ Shared from DreamKeeper
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'DreamKeeper Export',
+                  'DreamDecoder Export',
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,
@@ -274,10 +274,9 @@ Shared from DreamKeeper
       if (kIsWeb) {
         final blob = html.Blob([bytes], 'application/pdf');
         final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor =
-            html.AnchorElement(href: url)
-              ..setAttribute("download", filename)
-              ..click();
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute("download", filename)
+          ..click();
         html.Url.revokeObjectUrl(url);
       } else {
         final directory = await getApplicationDocumentsDirectory();
@@ -316,7 +315,7 @@ Shared from DreamKeeper
       final tags = (dreamData['tags'] as List?)?.cast<String>() ?? [];
 
       final content = '''
-DreamKeeper Export
+DreamDecoder Export
 ==================
 
 Title: $title
@@ -339,10 +338,9 @@ Exported on: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year
         final bytes = utf8.encode(content);
         final blob = html.Blob([bytes]);
         final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor =
-            html.AnchorElement(href: url)
-              ..setAttribute("download", filename)
-              ..click();
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute("download", filename)
+          ..click();
         html.Url.revokeObjectUrl(url);
       } else {
         final directory = await getApplicationDocumentsDirectory();

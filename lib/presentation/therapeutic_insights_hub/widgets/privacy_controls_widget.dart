@@ -720,7 +720,7 @@ class _PrivacyControlsWidgetState extends State<PrivacyControlsWidget> {
           ),
         ),
         content: Text(
-          'For privacy and security questions, contact us at privacy@dreamkeeper.com',
+          'For privacy and security questions, contact us at privacy@dreamdecoder.com',
           style: GoogleFonts.inter(
             color: Colors.white70,
           ),

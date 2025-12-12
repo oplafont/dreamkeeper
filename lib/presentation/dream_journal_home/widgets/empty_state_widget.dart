@@ -7,7 +7,7 @@ class EmptyStateWidget extends StatefulWidget {
   final VoidCallback onGetStarted;
 
   const EmptyStateWidget({Key? key, required this.onGetStarted})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<EmptyStateWidget> createState() => _EmptyStateWidgetState();
@@ -77,8 +77,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppTheme.getAccentPurple()
-                                  .withValues(alpha: 0.1),
+                              AppTheme.getAccentPurple().withValues(alpha: 0.1),
                               AppTheme.lightTheme.colorScheme.secondary
                                   .withValues(alpha: 0.1),
                             ],
@@ -124,9 +123,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                                     gradient: LinearGradient(
                                       colors: [
                                         AppTheme
-                                            .lightTheme
-                                            .colorScheme
-                                            .secondary,
+                                            .lightTheme.colorScheme.secondary,
                                         AppTheme.getAccentPurple(),
                                       ],
                                       begin: Alignment.topLeft,
@@ -135,9 +132,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                                     boxShadow: [
                                       BoxShadow(
                                         color: AppTheme
-                                            .lightTheme
-                                            .colorScheme
-                                            .secondary
+                                            .lightTheme.colorScheme.secondary
                                             .withValues(alpha: 0.3),
                                         blurRadius: 20,
                                         spreadRadius: 5,
@@ -181,13 +176,11 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                                       Text(
                                         'Dream Journal',
                                         style: AppTheme
-                                            .lightTheme
-                                            .textTheme
-                                            .bodySmall
+                                            .lightTheme.textTheme.bodySmall
                                             ?.copyWith(
-                                              color: AppTheme.getAccentPurple(),
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                          color: AppTheme.getAccentPurple(),
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -202,7 +195,7 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Welcome to DreamKeeper',
+                  'Welcome to DreamDecoder',
                   style: AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -244,9 +237,8 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                             'Pro Tips for Better Dream Recall',
                             style: AppTheme.lightTheme.textTheme.titleSmall
                                 ?.copyWith(
-                                  color:
-                                      AppTheme.lightTheme.colorScheme.secondary,
-                                ),
+                              color: AppTheme.lightTheme.colorScheme.secondary,
+                            ),
                           ),
                         ],
                       ),
@@ -282,11 +274,11 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                       SizedBox(width: 2.w),
                       Text(
                         'Record Your First Dream',
-                        style: AppTheme.lightTheme.textTheme.titleSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style:
+                            AppTheme.lightTheme.textTheme.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
