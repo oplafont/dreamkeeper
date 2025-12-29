@@ -87,6 +87,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           routes: AppRoutes.routes,
           initialRoute: AppRoutes.initial,
+          home: const AuthWrapper(),
         );
       },
     );

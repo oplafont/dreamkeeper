@@ -200,7 +200,7 @@ class _PersonalDocumentationWidgetState
                     _includeVisuals = value;
                   });
                 },
-                activeColor: const Color(0xFF8B5CF6),
+                activeThumbColor: const Color(0xFF8B5CF6),
                 dense: true,
               ),
               SwitchListTile(
@@ -218,7 +218,7 @@ class _PersonalDocumentationWidgetState
                     _includeAnalytics = value;
                   });
                 },
-                activeColor: const Color(0xFF8B5CF6),
+                activeThumbColor: const Color(0xFF8B5CF6),
                 dense: true,
               ),
               const Divider(color: Color(0xFF4C1D95)),

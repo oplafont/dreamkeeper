@@ -2,71 +2,79 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// A class that contains all theme configurations for the dream journaling application.
-/// Implements the sophisticated dark purple theme matching the "REMember your nights, decode your days" design.
+/// Implements the sophisticated dark reddish purple theme for a mysterious, dreamy atmosphere.
 class AppTheme {
   AppTheme._();
 
-  // Dark Purple Nighttime Color Palette - Matching Reference Design
+  // Dark Reddish Purple Nighttime Color Palette
 
-  // Core dark purple and blue gradient colors from reference
-  static const Color primaryDarkPurple = Color(
-    0xFF2D1B69,
-  ); // Deep purple from reference
-  static const Color primaryDarkBlue = Color(0xFF1A0B3D); // Dark blue gradient
+  // Core reddish purple colors
+  static const Color primaryBurgundy = Color(0xFF722F37); // Deep burgundy
+  static const Color wineRed = Color(0xFFA0153E); // Wine red
+  static const Color darkCrimson = Color(0xFF5D0E41); // Dark crimson
+  static const Color mutedPurple = Color(0xFF00224D); // Muted purple
   static const Color backgroundDarkest = Color(
     0xFF0F051F,
   ); // Deepest background
-  static const Color accentPurple = Color(0xFF8B5CF6); // Purple accent
-  static const Color accentPurpleLight = Color(
-    0xFFA855F7,
-  ); // Lighter purple accent
 
-  // Card and surface colors
-  static const Color cardDarkPurple = Color(0xFF1E1B4B); // Dark card background
-  static const Color cardMediumPurple = Color(
-    0xFF312E81,
-  ); // Medium card background
-  static const Color surfaceDarkPurple = Color(0xFF2D1B69); // Surface color
+  // Accent colors
+  static const Color accentRedPurple = Color(0xFFFF5F7E); // Bright red-purple
+  static const Color coralRed = Color(0xFFE94560); // Coral red
+  static const Color softPink = Color(0xFFF7DC6F); // Soft pink/gold
+
+  // Card and surface colors with reddish purple tones
+  static const Color cardDarkBurgundy = Color(0xFF3D1F26); // Dark burgundy card
+  static const Color cardMediumPurple = Color(0xFF5D2E46); // Medium purple card
+  static const Color surfaceDarkPurple = Color(0xFF722F37); // Surface color
 
   // Text colors for dark theme
   static const Color textWhite = Color(0xFFFFFFFF); // Pure white for headings
   static const Color textLightGray = Color(
-    0xFFE5E7EB,
-  ); // Light gray for body text
+    0xFFF5F5F7,
+  ); // Brighter light gray for maximum body text readability
   static const Color textMediumGray = Color(
-    0xFFD1D5DB,
-  ); // Medium gray for secondary text
-  static const Color textDisabledGray = Color(0xFF9CA3AF); // Disabled text
+    0xFFE8E8EA,
+  ); // Brighter medium gray for excellent secondary text visibility
+  static const Color textDisabledGray = Color(
+    0xFFB8B8BA,
+  ); // Brighter disabled text for better contrast
 
-  // Success, warning, and error colors adapted for dark theme
+  // Success, warning, and error colors
   static const Color successColor = Color(0xFF10B981); // Green
   static const Color warningColor = Color(0xFFF59E0B); // Amber
   static const Color errorColor = Color(0xFFEF4444); // Red
 
-  // Border and divider colors
-  static const Color borderPurple = Color(0xFF4C1D95); // Purple border
-  static const Color dividerPurple = Color(0xFF3730A3); // Purple divider
+  // Border and divider colors with reddish tones
+  static const Color borderPurple = Color(0xFF8B3A62); // Reddish purple border
+  static const Color dividerPurple = Color(0xFF6B2D5C); // Purple divider
 
-  /// Dark theme with sophisticated purple nighttime aesthetic
+  // Legacy purple colors (kept for compatibility)
+  static const Color primaryDarkPurple = primaryBurgundy;
+  static const Color primaryDarkBlue = darkCrimson;
+  static const Color accentPurple = accentRedPurple;
+  static const Color accentPurpleLight = coralRed;
+  static const Color cardDarkPurple = cardDarkBurgundy;
+
+  /// Dark theme with sophisticated reddish purple nighttime aesthetic
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     colorScheme: ColorScheme(
       brightness: Brightness.dark,
-      primary: accentPurple,
+      primary: accentRedPurple,
       onPrimary: textWhite,
-      primaryContainer: primaryDarkPurple,
+      primaryContainer: primaryBurgundy,
       onPrimaryContainer: textWhite,
-      secondary: accentPurpleLight,
+      secondary: coralRed,
       onSecondary: textWhite,
-      secondaryContainer: cardDarkPurple,
+      secondaryContainer: cardDarkBurgundy,
       onSecondaryContainer: textLightGray,
-      tertiary: accentPurpleLight,
-      onTertiary: textWhite,
+      tertiary: softPink,
+      onTertiary: primaryBurgundy,
       tertiaryContainer: cardMediumPurple,
       onTertiaryContainer: textLightGray,
       error: errorColor,
       onError: textWhite,
-      surface: cardDarkPurple,
+      surface: cardDarkBurgundy,
       onSurface: textLightGray,
       onSurfaceVariant: textMediumGray,
       outline: borderPurple,
@@ -75,15 +83,15 @@ class AppTheme {
       scrim: Colors.black87,
       inverseSurface: textWhite,
       onInverseSurface: backgroundDarkest,
-      inversePrimary: primaryDarkPurple,
+      inversePrimary: primaryBurgundy,
     ),
     scaffoldBackgroundColor: backgroundDarkest,
-    cardColor: cardDarkPurple,
+    cardColor: cardDarkBurgundy,
     dividerColor: dividerPurple,
 
-    // AppBar with dark gradient theme
-    appBarTheme: AppBarTheme(
-      backgroundColor: primaryDarkPurple,
+    // AppBar with reddish purple theme
+    appBarTheme: AppBarThemeData(
+      backgroundColor: primaryBurgundy,
       foregroundColor: textWhite,
       elevation: 0,
       shadowColor: Colors.black54,
@@ -98,19 +106,19 @@ class AppTheme {
       actionsIconTheme: IconThemeData(color: textWhite),
     ),
 
-    // Card theme with dark purple background
-    cardTheme: CardTheme(
-      color: cardDarkPurple,
+    // Card theme with dark burgundy background
+    cardTheme: CardThemeData(
+      color: cardDarkBurgundy,
       elevation: 4,
       shadowColor: Colors.black54,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
 
-    // Bottom navigation with dark theme
+    // Bottom navigation with reddish purple theme
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: primaryDarkPurple,
-      selectedItemColor: accentPurpleLight,
+      backgroundColor: primaryBurgundy,
+      selectedItemColor: coralRed,
       unselectedItemColor: textMediumGray,
       elevation: 8,
       type: BottomNavigationBarType.fixed,
@@ -124,9 +132,9 @@ class AppTheme {
       ),
     ),
 
-    // FAB with purple accent
+    // FAB with red-purple accent
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: accentPurple,
+      backgroundColor: accentRedPurple,
       foregroundColor: textWhite,
       elevation: 8,
       focusElevation: 10,
@@ -135,11 +143,11 @@ class AppTheme {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
 
-    // Button themes with purple accents
+    // Button themes with reddish purple accents
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: textWhite,
-        backgroundColor: accentPurple,
+        backgroundColor: accentRedPurple,
         elevation: 4,
         shadowColor: Colors.black54,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -156,9 +164,9 @@ class AppTheme {
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: accentPurpleLight,
+        foregroundColor: coralRed,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        side: BorderSide(color: accentPurpleLight, width: 1.5),
+        side: BorderSide(color: coralRed, width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -172,7 +180,7 @@ class AppTheme {
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: accentPurpleLight,
+        foregroundColor: coralRed,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.inter(
@@ -186,8 +194,8 @@ class AppTheme {
     // Typography with white and gray text
     textTheme: _buildDarkTextTheme(),
 
-    // Input decoration with dark purple theme
-    inputDecorationTheme: InputDecorationTheme(
+    // Input decoration with reddish purple theme
+    inputDecorationTheme: InputDecorationThemeData(
       fillColor: cardMediumPurple,
       filled: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -201,7 +209,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
-        borderSide: BorderSide(color: accentPurpleLight, width: 2),
+        borderSide: BorderSide(color: coralRed, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -222,24 +230,21 @@ class AppTheme {
         fontWeight: FontWeight.w400,
       ),
       floatingLabelStyle: GoogleFonts.inter(
-        color: accentPurpleLight,
+        color: coralRed,
         fontSize: 12,
         fontWeight: FontWeight.w500,
       ),
     ),
 
-    // Switch theme with purple accents
+    // Switch theme with reddish purple accents
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return accentPurpleLight;
-        }
+        if (states.contains(WidgetState.selected)) return coralRed;
         return textDisabledGray;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return accentPurpleLight.withAlpha(77);
-        }
+        if (states.contains(WidgetState.selected))
+          return coralRed.withAlpha(77);
         return textDisabledGray.withAlpha(77);
       }),
     ),
@@ -247,9 +252,7 @@ class AppTheme {
     // Checkbox theme
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return accentPurpleLight;
-        }
+        if (states.contains(WidgetState.selected)) return coralRed;
         return Colors.transparent;
       }),
       checkColor: WidgetStateProperty.all(textWhite),
@@ -260,34 +263,32 @@ class AppTheme {
     // Radio theme
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return accentPurpleLight;
-        }
+        if (states.contains(WidgetState.selected)) return coralRed;
         return textMediumGray;
       }),
     ),
 
     // Progress indicator theme
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: accentPurpleLight,
+      color: coralRed,
       linearTrackColor: borderPurple,
       circularTrackColor: borderPurple,
     ),
 
     // Slider theme
     sliderTheme: SliderThemeData(
-      activeTrackColor: accentPurpleLight,
-      thumbColor: accentPurpleLight,
-      overlayColor: accentPurpleLight.withAlpha(51),
+      activeTrackColor: coralRed,
+      thumbColor: coralRed,
+      overlayColor: coralRed.withAlpha(51),
       inactiveTrackColor: borderPurple,
       trackHeight: 4,
     ),
 
     // Tab bar theme
-    tabBarTheme: TabBarTheme(
-      labelColor: accentPurpleLight,
+    tabBarTheme: TabBarThemeData(
+      labelColor: coralRed,
       unselectedLabelColor: textMediumGray,
-      indicatorColor: accentPurpleLight,
+      indicatorColor: coralRed,
       indicatorSize: TabBarIndicatorSize.label,
       labelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
       unselectedLabelStyle: GoogleFonts.inter(
@@ -313,20 +314,20 @@ class AppTheme {
 
     // SnackBar theme
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: cardDarkPurple,
+      backgroundColor: cardDarkBurgundy,
       contentTextStyle: GoogleFonts.inter(
         color: textLightGray,
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
-      actionTextColor: accentPurpleLight,
+      actionTextColor: coralRed,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       elevation: 8,
     ),
 
     dialogTheme: DialogThemeData(
-      backgroundColor: cardDarkPurple,
+      backgroundColor: cardDarkBurgundy,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
     ),
   );
@@ -355,7 +356,7 @@ class AppTheme {
           Color(0xFF475569), // Lighter slate
         ],
       ).colors.first, // Use first color as fallback
-      appBarTheme: AppBarTheme(
+      appBarTheme: AppBarThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -563,25 +564,25 @@ class AppTheme {
     return GoogleFonts.interTextTheme();
   }
 
-  /// Helper method to create gradient decoration for backgrounds
+  /// Helper method to create gradient decoration for backgrounds with reddish purple
   static BoxDecoration createGradientBackground() {
     return BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [primaryDarkPurple, primaryDarkBlue, backgroundDarkest],
+        colors: [primaryBurgundy, darkCrimson, backgroundDarkest],
         stops: [0.0, 0.6, 1.0],
       ),
     );
   }
 
-  /// Helper method to create card gradient decoration
+  /// Helper method to create card gradient decoration with reddish purple
   static BoxDecoration createCardGradient() {
     return BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [cardDarkPurple, cardMediumPurple],
+        colors: [cardDarkBurgundy, cardMediumPurple],
         stops: [0.0, 1.0],
       ),
       borderRadius: BorderRadius.circular(16.0),
@@ -605,15 +606,11 @@ class AppTheme {
   static Color getAccentPurpleLight() => accentPurpleLight;
 
   static BoxDecoration get dreamEntryGradient {
-    return const BoxDecoration(
+    return BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF1E293B), // Dark slate
-          Color(0xFF334155), // Slate
-          Color(0xFF475569), // Lighter slate
-        ],
+        colors: [primaryBurgundy, darkCrimson, wineRed],
       ),
     );
   }

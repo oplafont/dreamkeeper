@@ -157,7 +157,7 @@ class _BatchExportWidgetState extends State<BatchExportWidget> {
                     _separateFiles = value;
                   });
                 },
-                activeColor: const Color(0xFF8B5CF6),
+                activeThumbColor: const Color(0xFF8B5CF6),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
               ),

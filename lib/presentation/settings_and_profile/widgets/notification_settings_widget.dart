@@ -230,7 +230,7 @@ class _NotificationSettingsWidgetState
           ),
           SizedBox(height: 2.h),
           DropdownButtonFormField<String>(
-            value: _settings['insightFrequency'] as String,
+            initialValue: _settings['insightFrequency'] as String,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 3.w,

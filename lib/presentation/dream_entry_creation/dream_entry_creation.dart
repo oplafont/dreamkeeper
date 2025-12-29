@@ -3,6 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../models/dream.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/custom_icon_widget.dart';
+import './widgets/clarity_score_widget.dart';
 import './widgets/dream_tags_widget.dart';
 import './widgets/image_attachment_widget.dart';
 import './widgets/mood_selector_widget.dart';
@@ -27,6 +31,7 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
   String? _selectedMood;
   List<XFile> _attachedImages = [];
   double _sleepQuality = 5.0;
+  double _clarityScore = 7.0;
   DateTime _dreamDate = DateTime.now();
   TimeOfDay _dreamTime = TimeOfDay.now();
 
@@ -101,6 +106,18 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
     }
   }
 
+  // NEW: Quick date preset for 'Last Night'
+  void _setLastNight() {
+    final now = DateTime.now();
+    final lastNight = DateTime(now.year, now.month, now.day - 1, 23, 0);
+
+    setState(() {
+      _dreamDate = lastNight;
+      _dreamTime = TimeOfDay(hour: 23, minute: 0);
+    });
+    _markAsChanged();
+  }
+
   Future<void> _selectTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -146,9 +163,7 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
               'Discard',
-              style: TextStyle(
-                color: AppTheme.lightTheme.colorScheme.error,
-              ),
+              style: TextStyle(color: AppTheme.lightTheme.colorScheme.error),
             ),
           ),
         ],
@@ -285,7 +300,6 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                   child: Column(
                     children: [
                       SizedBox(height: 12.h), // Extra space for app bar
-
                       // Big Voice Recording Button
                       Container(
                         width: 50.w,
@@ -308,9 +322,9 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                         'Tap to record your dream',
                         style: AppTheme.lightTheme.textTheme.headlineSmall
                             ?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
                         textAlign: TextAlign.center,
                       ),
 
@@ -318,10 +332,8 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
 
                       Text(
                         'Speak naturally and clearly about what you remember',
-                        style:
-                            AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
-                        ),
+                        style: AppTheme.lightTheme.textTheme.bodyLarge
+                            ?.copyWith(color: Colors.white70),
                         textAlign: TextAlign.center,
                       ),
 
@@ -348,17 +360,15 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                 'Your Dream:',
                                 style: AppTheme.lightTheme.textTheme.titleSmall
                                     ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                               SizedBox(height: 1.h),
                               Text(
                                 _dreamText,
                                 style: AppTheme.lightTheme.textTheme.bodyMedium
-                                    ?.copyWith(
-                                  color: Colors.white,
-                                ),
+                                    ?.copyWith(color: Colors.white),
                               ),
                             ],
                           ),
@@ -381,9 +391,9 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                 'Add more details',
                                 style: AppTheme.lightTheme.textTheme.bodyLarge
                                     ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
                               SizedBox(width: 2.w),
                               CustomIconWidget(
@@ -421,9 +431,7 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                               Text(
                                 'Additional Details',
                                 style: AppTheme.lightTheme.textTheme.titleLarge
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               IconButton(
                                 onPressed: () {
@@ -456,7 +464,7 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
 
                           SizedBox(height: 4.h),
 
-                          // Date and Time Selection
+                          // Date and Time Selection with Quick Preset
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.all(4.w),
@@ -471,13 +479,41 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'When did you have this dream?',
-                                  style: AppTheme
-                                      .lightTheme.textTheme.titleSmall
-                                      ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'When did you have this dream?',
+                                      style: AppTheme
+                                          .lightTheme
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: _setLastNight,
+                                      icon: Icon(
+                                        Icons.nightlight_round,
+                                        size: 4.w,
+                                      ),
+                                      label: Text('Last Night'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 3.w,
+                                          vertical: 1.h,
+                                        ),
+                                        side: BorderSide(
+                                          color: AppTheme
+                                              .lightTheme
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(height: 2.h),
                                 Row(
@@ -492,12 +528,17 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                           ),
                                           decoration: BoxDecoration(
                                             color: AppTheme
-                                                .lightTheme.colorScheme.surface,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                                .lightTheme
+                                                .colorScheme
+                                                .surface,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                             border: Border.all(
-                                              color: AppTheme.lightTheme
-                                                  .colorScheme.outline,
+                                              color: AppTheme
+                                                  .lightTheme
+                                                  .colorScheme
+                                                  .outline,
                                               width: 1,
                                             ),
                                           ),
@@ -505,18 +546,23 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                             children: [
                                               CustomIconWidget(
                                                 iconName: 'calendar_today',
-                                                color: AppTheme.lightTheme
-                                                    .colorScheme.secondary,
+                                                color: AppTheme
+                                                    .lightTheme
+                                                    .colorScheme
+                                                    .secondary,
                                                 size: 5.w,
                                               ),
                                               SizedBox(width: 2.w),
                                               Text(
                                                 '${_dreamDate.day}/${_dreamDate.month}/${_dreamDate.year}',
-                                                style: AppTheme.lightTheme
-                                                    .textTheme.bodyMedium
+                                                style: AppTheme
+                                                    .lightTheme
+                                                    .textTheme
+                                                    .bodyMedium
                                                     ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
                                               ),
                                             ],
                                           ),
@@ -534,12 +580,17 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                           ),
                                           decoration: BoxDecoration(
                                             color: AppTheme
-                                                .lightTheme.colorScheme.surface,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                                .lightTheme
+                                                .colorScheme
+                                                .surface,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                             border: Border.all(
-                                              color: AppTheme.lightTheme
-                                                  .colorScheme.outline,
+                                              color: AppTheme
+                                                  .lightTheme
+                                                  .colorScheme
+                                                  .outline,
                                               width: 1,
                                             ),
                                           ),
@@ -547,18 +598,23 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                                             children: [
                                               CustomIconWidget(
                                                 iconName: 'access_time',
-                                                color: AppTheme.lightTheme
-                                                    .colorScheme.secondary,
+                                                color: AppTheme
+                                                    .lightTheme
+                                                    .colorScheme
+                                                    .secondary,
                                                 size: 5.w,
                                               ),
                                               SizedBox(width: 2.w),
                                               Text(
                                                 _dreamTime.format(context),
-                                                style: AppTheme.lightTheme
-                                                    .textTheme.bodyMedium
+                                                style: AppTheme
+                                                    .lightTheme
+                                                    .textTheme
+                                                    .bodyMedium
                                                     ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
                                               ),
                                             ],
                                           ),
@@ -579,6 +635,19 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
                             onMoodChanged: (mood) {
                               setState(() {
                                 _selectedMood = mood.isEmpty ? null : mood;
+                              });
+                              _markAsChanged();
+                            },
+                          ),
+
+                          SizedBox(height: 4.h),
+
+                          // NEW: Clarity Score Widget
+                          ClarityScoreWidget(
+                            clarityScore: _clarityScore,
+                            onClarityChanged: (score) {
+                              setState(() {
+                                _clarityScore = score;
                               });
                               _markAsChanged();
                             },

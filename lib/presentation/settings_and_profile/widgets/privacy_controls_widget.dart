@@ -166,7 +166,7 @@ class _PrivacyControlsWidgetState extends State<PrivacyControlsWidget> {
           ),
           SizedBox(height: 2.h),
           DropdownButtonFormField<String>(
-            value: _settings['autoLockTimeout'] as String,
+            initialValue: _settings['autoLockTimeout'] as String,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 3.w,

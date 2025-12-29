@@ -41,7 +41,7 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
 
   Future<void> _loadUserData() async {
     if (!_authService.isAuthenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.authScreen);
+      Navigator.pushReplacementNamed(context, AppRoutes.authWrapper);
       return;
     }
 
@@ -131,7 +131,7 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
   Future<void> _signOut() async {
     try {
       await _authService.signOut();
-      Navigator.pushReplacementNamed(context, AppRoutes.authScreen);
+      Navigator.pushReplacementNamed(context, AppRoutes.authWrapper);
     } catch (e) {
       _showError('Failed to sign out: ${e.toString()}');
     }

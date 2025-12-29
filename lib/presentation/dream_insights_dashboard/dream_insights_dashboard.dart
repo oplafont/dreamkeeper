@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../services/analytics_service.dart';
 import '../../services/dream_service.dart';
 import '../../theme/app_theme.dart';
 import './widgets/dream_category_chart_widget.dart';
@@ -79,6 +80,12 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
         dreamCount: 15,
       );
 
+      // Track insight generation
+      await AnalyticsService.trackInsightGeneration(
+        insightType: insightType,
+        confidence: 0.85,
+      );
+
       // Save the generated insight
       await _dreamService.saveInsight(
         insightType: insightType,
@@ -93,8 +100,9 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('${_getInsightTitle(insightType)} generated successfully!'),
+          content: Text(
+            '${_getInsightTitle(insightType)} generated successfully!',
+          ),
           backgroundColor: AppTheme.successColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -362,14 +370,30 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
             spacing: 3.w,
             runSpacing: 2.h,
             children: [
-              _buildInsightButton('patterns', 'Pattern Analysis', Icons.grain,
-                  'Discover recurring themes and symbols'),
-              _buildInsightButton('emotions', 'Emotional Journey',
-                  Icons.favorite, 'Understand your emotional landscape'),
-              _buildInsightButton('symbols', 'Symbol Meanings',
-                  Icons.auto_awesome, 'Decode your personal dream symbols'),
-              _buildInsightButton('themes', 'Life Theme Insights',
-                  Icons.lightbulb, 'Connect dreams to life patterns'),
+              _buildInsightButton(
+                'patterns',
+                'Pattern Analysis',
+                Icons.grain,
+                'Discover recurring themes and symbols',
+              ),
+              _buildInsightButton(
+                'emotions',
+                'Emotional Journey',
+                Icons.favorite,
+                'Understand your emotional landscape',
+              ),
+              _buildInsightButton(
+                'symbols',
+                'Symbol Meanings',
+                Icons.auto_awesome,
+                'Decode your personal dream symbols',
+              ),
+              _buildInsightButton(
+                'themes',
+                'Life Theme Insights',
+                Icons.lightbulb,
+                'Connect dreams to life patterns',
+              ),
             ],
           ),
         ],
@@ -378,7 +402,11 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
   }
 
   Widget _buildInsightButton(
-      String type, String label, IconData icon, String description) {
+    String type,
+    String label,
+    IconData icon,
+    String description,
+  ) {
     return Container(
       width: double.infinity,
       child: ElevatedButton(
@@ -644,14 +672,15 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
                         padding: EdgeInsets.all(1.w),
                         decoration: BoxDecoration(
                           color: _getInsightTypeColor(
-                                  insight['insight_type'] ?? '')
-                              .withAlpha(51),
+                            insight['insight_type'] ?? '',
+                          ).withAlpha(51),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
                           _getInsightTypeIcon(insight['insight_type'] ?? ''),
                           color: _getInsightTypeColor(
-                              insight['insight_type'] ?? ''),
+                            insight['insight_type'] ?? '',
+                          ),
                           size: 4.w,
                         ),
                       ),
@@ -659,11 +688,11 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
                       Expanded(
                         child: Text(
                           insight['insight_title'] ?? 'Insight',
-                          style:
-                              AppTheme.darkTheme.textTheme.titleSmall?.copyWith(
-                            color: AppTheme.textWhite,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTheme.darkTheme.textTheme.titleSmall
+                              ?.copyWith(
+                                color: AppTheme.textWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                       Text(
@@ -686,18 +715,22 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
                   ),
                   SizedBox(height: 2.h),
                   Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.5.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 2.w,
+                      vertical: 0.5.h,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getInsightTypeColor(insight['insight_type'] ?? '')
-                          .withAlpha(26),
+                      color: _getInsightTypeColor(
+                        insight['insight_type'] ?? '',
+                      ).withAlpha(26),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _formatInsightType(insight['insight_type'] ?? ''),
                       style: AppTheme.darkTheme.textTheme.bodySmall?.copyWith(
-                        color:
-                            _getInsightTypeColor(insight['insight_type'] ?? ''),
+                        color: _getInsightTypeColor(
+                          insight['insight_type'] ?? '',
+                        ),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -778,15 +811,10 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.cardDarkPurple,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(
-              Icons.psychology,
-              color: AppTheme.accentPurpleLight,
-            ),
+            Icon(Icons.psychology, color: AppTheme.accentPurpleLight),
             SizedBox(width: 2.w),
             Text(
               'About Dream Insights',
@@ -817,11 +845,17 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
             ),
             SizedBox(height: 1.h),
             _buildFeatureItem(
-                'Pattern Analysis', 'Identify recurring themes and symbols'),
+              'Pattern Analysis',
+              'Identify recurring themes and symbols',
+            ),
             _buildFeatureItem(
-                'Emotional Journey', 'Track your emotional landscape'),
+              'Emotional Journey',
+              'Track your emotional landscape',
+            ),
             _buildFeatureItem(
-                'Symbol Meanings', 'Decode personal dream symbols'),
+              'Symbol Meanings',
+              'Decode personal dream symbols',
+            ),
             _buildFeatureItem('Life Themes', 'Connect dreams to life patterns'),
           ],
         ),

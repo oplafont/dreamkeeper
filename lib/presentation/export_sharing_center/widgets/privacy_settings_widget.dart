@@ -317,7 +317,7 @@ class _PrivacySettingsWidgetState extends State<PrivacySettingsWidget> {
               });
               widget.onSettingsChanged(_settings);
             },
-            activeColor: const Color(0xFF8B5CF6),
+            activeThumbColor: const Color(0xFF8B5CF6),
             inactiveThumbColor: Colors.white60,
             inactiveTrackColor: Colors.white24,
           ),

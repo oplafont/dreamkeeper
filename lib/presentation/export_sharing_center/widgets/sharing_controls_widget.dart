@@ -130,7 +130,7 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
                       _usePassword = value;
                     });
                   },
-                  activeColor: const Color(0xFF8B5CF6),
+                  activeThumbColor: const Color(0xFF8B5CF6),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -186,7 +186,7 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
                       _setExpiration = value;
                     });
                   },
-                  activeColor: const Color(0xFF8B5CF6),
+                  activeThumbColor: const Color(0xFF8B5CF6),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -242,7 +242,7 @@ class _SharingControlsWidgetState extends State<SharingControlsWidget> {
                       _trackAccess = value;
                     });
                   },
-                  activeColor: const Color(0xFF8B5CF6),
+                  activeThumbColor: const Color(0xFF8B5CF6),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),

@@ -231,7 +231,7 @@ class _AppPreferencesWidgetState extends State<AppPreferencesWidget> {
           ),
           SizedBox(height: 2.h),
           DropdownButtonFormField<String>(
-            value: _settings['voiceQuality'] as String,
+            initialValue: _settings['voiceQuality'] as String,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 3.w,

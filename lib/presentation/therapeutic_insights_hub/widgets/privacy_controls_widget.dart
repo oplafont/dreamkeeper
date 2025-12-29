@@ -225,7 +225,7 @@ class _PrivacyControlsWidgetState extends State<PrivacyControlsWidget> {
           Switch(
             value: value,
             onChanged: enabled ? onChanged : null,
-            activeColor: color,
+            activeThumbColor: color,
             inactiveThumbColor: Colors.white38,
             inactiveTrackColor: Colors.white12,
           ),

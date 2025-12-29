@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../services/openai_client.dart';
 import '../services/openai_service.dart';
+import '../services/realtime_service.dart';
 import '../services/supabase_service.dart';
 
 class DreamService {
   final client = SupabaseService.instance.client;
   late final OpenAIClient _aiClient;
+  final RealtimeService _realtimeService = RealtimeService();
 
   DreamService() {
     _aiClient = OpenAIClient(OpenAIService().dio);
@@ -15,6 +19,7 @@ class DreamService {
   // Dream CRUD Operations
 
   /// Create a new dream entry with optional AI analysis
+  /// NOW USES SUPABASE EDGE FUNCTION FOR SECURE SERVER-SIDE AI PROCESSING
   Future<Map<String, dynamic>> createDream({
     required String content,
     String? title,
@@ -46,15 +51,17 @@ class DreamService {
       if (isRecurring != null) dreamData['is_recurring'] = isRecurring;
       if (clarityScore != null) dreamData['clarity_score'] = clarityScore;
 
-      // Perform AI analysis if requested
+      // Perform AI analysis if requested - NOW VIA EDGE FUNCTION
       if (performAIAnalysis) {
         try {
+          // Edge Function handles JWT verification and OpenAI call server-side
           final analysis = await _aiClient.analyzeDreamContent(
             dreamContent: content,
             mood: mood,
             userTags: tags,
           );
 
+          // Store AI analysis results in database
           dreamData['ai_analysis'] = analysis;
           dreamData['ai_tags'] = analysis['ai_tags'];
           dreamData['ai_symbols'] = analysis['ai_symbols'];
@@ -66,13 +73,16 @@ class DreamService {
             dreamData['clarity_score'] = analysis['clarity_assessment'];
           }
         } catch (e) {
-          print('AI analysis failed: $e');
-          // Continue without AI analysis
+          print('AI analysis via Edge Function failed: $e');
+          // Continue without AI analysis - dream still gets saved
         }
       }
 
-      final response =
-          await client.from('dreams').insert(dreamData).select().single();
+      final response = await client
+          .from('dreams')
+          .insert(dreamData)
+          .select()
+          .single();
       return response;
     } catch (error) {
       throw Exception('Failed to create dream: $error');
@@ -100,16 +110,21 @@ class DreamService {
         query = query.eq('mood', mood);
       }
       if (startDate != null) {
-        query =
-            query.gte('dream_date', startDate.toIso8601String().split('T')[0]);
+        query = query.gte(
+          'dream_date',
+          startDate.toIso8601String().split('T')[0],
+        );
       }
       if (endDate != null) {
-        query =
-            query.lte('dream_date', endDate.toIso8601String().split('T')[0]);
+        query = query.lte(
+          'dream_date',
+          endDate.toIso8601String().split('T')[0],
+        );
       }
 
-      final response =
-          await query.order('dream_date', ascending: false).limit(limit);
+      final response = await query
+          .order('dream_date', ascending: false)
+          .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (error) {
       throw Exception('Failed to fetch dreams: $error');
@@ -133,7 +148,9 @@ class DreamService {
 
   /// Update a dream entry
   Future<Map<String, dynamic>> updateDream(
-      String dreamId, Map<String, dynamic> updates) async {
+    String dreamId,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       final response = await client
           .from('dreams')
@@ -212,8 +229,10 @@ class DreamService {
   Future<Map<String, dynamic>> getDreamStatistics() async {
     try {
       final userId = client.auth.currentUser!.id;
-      final response = await client
-          .rpc('get_dream_statistics', params: {'user_uuid': userId});
+      final response = await client.rpc(
+        'get_dream_statistics',
+        params: {'user_uuid': userId},
+      );
       return response;
     } catch (error) {
       throw Exception('Failed to fetch dream statistics: $error');
@@ -316,12 +335,14 @@ class DreamService {
 
       // Text search in content and title
       if (searchTerm.isNotEmpty) {
-        query =
-            query.or('content.ilike.%$searchTerm%,title.ilike.%$searchTerm%');
+        query = query.or(
+          'content.ilike.%$searchTerm%,title.ilike.%$searchTerm%',
+        );
       }
 
-      final response =
-          await query.order('dream_date', ascending: false).limit(50);
+      final response = await query
+          .order('dream_date', ascending: false)
+          .limit(50);
       return List<Map<String, dynamic>>.from(response);
     } catch (error) {
       throw Exception('Failed to search dreams: $error');
@@ -345,5 +366,237 @@ class DreamService {
     } catch (error) {
       throw Exception('Failed to fetch dreams by date range: $error');
     }
+  }
+
+  // Paginated Public Dreams Feed Operations
+
+  /// Get public dreams with pagination support
+  Future<Map<String, dynamic>> getPublicDreamsPaginated({
+    required int page,
+    required int pageSize,
+    String? category,
+    String? sortOption,
+    String? searchText,
+    Map<String, dynamic>? advancedFilters,
+  }) async {
+    try {
+      final offset = page * pageSize;
+      var query = client
+          .from('dreams')
+          .select(
+            'id, title, content, mood, tags, ai_symbols, ai_emotions, created_at, user_id, is_lucid, is_nightmare, is_recurring, dream_type',
+          );
+
+      // Apply category filters
+      if (category != null && category != 'all') {
+        switch (category) {
+          case 'trending':
+            // Trending based on recent views (simulated with created_at for now)
+            query = query.gte(
+              'created_at',
+              DateTime.now()
+                  .subtract(const Duration(days: 7))
+                  .toIso8601String(),
+            );
+            break;
+          case 'lucid':
+            query = query.eq('is_lucid', true);
+            break;
+          case 'nightmares':
+            query = query.eq('is_nightmare', true);
+            break;
+          case 'recurring':
+            query = query.eq('is_recurring', true);
+            break;
+          case 'prophetic':
+            query = query.eq('dream_type', 'prophetic');
+            break;
+        }
+      }
+
+      // Apply search text filter
+      if (searchText != null && searchText.isNotEmpty) {
+        query = query.or(
+          'title.ilike.%$searchText%,content.ilike.%$searchText%',
+        );
+      }
+
+      // Apply advanced filters
+      if (advancedFilters != null) {
+        if (advancedFilters['emotion'] != null &&
+            advancedFilters['emotion'] != 'all') {
+          query = query.eq('mood', advancedFilters['emotion']);
+        }
+
+        if (advancedFilters['symbols'] != null &&
+            (advancedFilters['symbols'] as List).isNotEmpty) {
+          query = query.overlaps(
+            'ai_symbols',
+            advancedFilters['symbols'] as List,
+          );
+        }
+      }
+
+      // Apply sorting
+      switch (sortOption ?? 'trending') {
+        case 'recent':
+          break;
+        case 'trending':
+          break;
+        default:
+      }
+
+      // Get total count for pagination
+      final countResponse = await query.count();
+      final totalCount = countResponse.count;
+
+      // Apply sorting and pagination
+      final response = await query
+          .order('created_at', ascending: false)
+          .range(offset, offset + pageSize - 1);
+
+      return {
+        'dreams': List<Map<String, dynamic>>.from(response),
+        'totalCount': totalCount,
+        'hasMore': (offset + pageSize) < totalCount,
+        'currentPage': page,
+      };
+    } catch (error) {
+      throw Exception('Failed to fetch public dreams: $error');
+    }
+  }
+
+  /// Get AI-powered dream recommendations
+  Future<List<Map<String, dynamic>>> getAIRecommendations({
+    required Map<String, dynamic> userPreferences,
+    int limit = 5,
+  }) async {
+    try {
+      // Build query based on user preferences
+      var query = client
+          .from('dreams')
+          .select(
+            'id, title, content, mood, tags, ai_symbols, ai_emotions, ai_themes, created_at',
+          );
+
+      // Filter by preferred themes
+      final themes = userPreferences['themes'] as String?;
+      if (themes != null) {
+        final themeList = themes.split(',').map((t) => t.trim()).toList();
+        if (themeList.isNotEmpty) {
+          query = query.overlaps('ai_themes', themeList);
+        }
+      }
+
+      // Filter by preferred emotions
+      final emotions = userPreferences['emotions'] as List?;
+      if (emotions != null && emotions.isNotEmpty) {
+        query = query.inFilter('mood', emotions);
+      }
+
+      final response = await query
+          .order('created_at', ascending: false)
+          .limit(limit);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (error) {
+      throw Exception('Failed to fetch AI recommendations: $error');
+    }
+  }
+
+  /// Get trending dreams (most recent with high engagement)
+  Future<List<Map<String, dynamic>>> getTrendingDreams({int limit = 10}) async {
+    try {
+      final response = await client
+          .from('dreams')
+          .select(
+            'id, title, content, mood, tags, ai_symbols, created_at, user_id',
+          )
+          .gte(
+            'created_at',
+            DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
+          )
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (error) {
+      throw Exception('Failed to fetch trending dreams: $error');
+    }
+  }
+
+  // Real-time Subscription Methods
+
+  /// Subscribe to real-time dream submissions
+  /// Automatically syncs new dreams across all users without manual refresh
+  RealtimeChannel subscribeToNewDreams({
+    required Function(Map<String, dynamic>) onNewDream,
+    Function(Map<String, dynamic>)? onDreamUpdated,
+    Function(Map<String, dynamic>)? onDreamDeleted,
+  }) {
+    return _realtimeService.subscribeToDreams(
+      onInsert: onNewDream,
+      onUpdate: onDreamUpdated,
+      onDelete: onDreamDeleted,
+      channelName: 'public-dreams-feed',
+    );
+  }
+
+  /// Subscribe to real-time engagement metric updates
+  /// Tracks changes to user engagement summaries
+  RealtimeChannel subscribeToEngagementMetrics({
+    required Function(Map<String, dynamic>) onEngagementUpdate,
+  }) {
+    return _realtimeService.subscribeToEngagement(
+      onUpdate: onEngagementUpdate,
+      channelName: 'engagement-metrics',
+    );
+  }
+
+  /// Subscribe to category-specific dream updates
+  RealtimeChannel subscribeToCategoryDreams({
+    required String category,
+    required Function(Map<String, dynamic>) onNewDream,
+    Function(Map<String, dynamic>)? onDreamUpdated,
+  }) {
+    return _realtimeService.subscribeToDreamsByCategory(
+      category: category,
+      onInsert: onNewDream,
+      onUpdate: onDreamUpdated,
+      channelName: 'dreams-category-$category',
+    );
+  }
+
+  /// Subscribe to a specific dream's updates
+  RealtimeChannel subscribeToSpecificDream({
+    required String dreamId,
+    required Function(Map<String, dynamic>) onDreamUpdated,
+    Function(Map<String, dynamic>)? onDreamDeleted,
+  }) {
+    return _realtimeService.subscribeToDreamById(
+      dreamId: dreamId,
+      onUpdate: onDreamUpdated,
+      onDelete: onDreamDeleted,
+      channelName: 'dream-detail-$dreamId',
+    );
+  }
+
+  /// Unsubscribe from real-time updates
+  Future<void> unsubscribeFromRealtimeUpdates(String channelName) async {
+    await _realtimeService.unsubscribe(channelName);
+  }
+
+  /// Unsubscribe from all real-time channels
+  Future<void> unsubscribeFromAllRealtimeUpdates() async {
+    await _realtimeService.unsubscribeAll();
+  }
+
+  /// Check if subscribed to a specific channel
+  bool isSubscribedToChannel(String channelName) {
+    return _realtimeService.isChannelActive(channelName);
+  }
+
+  /// Get list of active subscription channels
+  List<String> getActiveSubscriptions() {
+    return _realtimeService.getActiveChannels();
   }
 }

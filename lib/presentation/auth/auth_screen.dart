@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
-import '../../theme/app_theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -159,12 +157,11 @@ class _AuthScreenState extends State<AuthScreen>
                     SizedBox(height: 3.h),
                     Text(
                       'DreamDecoder',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     SizedBox(height: 1.h),
                     Text(
@@ -218,40 +215,35 @@ class _AuthScreenState extends State<AuthScreen>
                                   padding: EdgeInsets.symmetric(vertical: 3.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
-                                    color:
-                                        _tabController.index == 0
-                                            ? AppTheme
-                                                .darkTheme
-                                                .colorScheme
-                                                .primary
-                                            : Colors.transparent,
-                                    boxShadow:
-                                        _tabController.index == 0
-                                            ? [
-                                              BoxShadow(
-                                                color: AppTheme
-                                                    .darkTheme
-                                                    .colorScheme
-                                                    .primary
-                                                    .withAlpha(77),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ]
-                                            : null,
+                                    color: _tabController.index == 0
+                                        ? AppTheme.darkTheme.colorScheme.primary
+                                        : Colors.transparent,
+                                    boxShadow: _tabController.index == 0
+                                        ? [
+                                            BoxShadow(
+                                              color: AppTheme
+                                                  .darkTheme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withAlpha(77),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
                                   ),
                                   child: Center(
                                     child: Text(
                                       'Sign In',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleMedium?.copyWith(
-                                        color:
-                                            _tabController.index == 0
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: _tabController.index == 0
                                                 ? Colors.white
                                                 : Colors.grey.shade600,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -270,40 +262,35 @@ class _AuthScreenState extends State<AuthScreen>
                                   padding: EdgeInsets.symmetric(vertical: 3.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
-                                    color:
-                                        _tabController.index == 1
-                                            ? AppTheme
-                                                .darkTheme
-                                                .colorScheme
-                                                .primary
-                                            : Colors.transparent,
-                                    boxShadow:
-                                        _tabController.index == 1
-                                            ? [
-                                              BoxShadow(
-                                                color: AppTheme
-                                                    .darkTheme
-                                                    .colorScheme
-                                                    .primary
-                                                    .withAlpha(77),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ]
-                                            : null,
+                                    color: _tabController.index == 1
+                                        ? AppTheme.darkTheme.colorScheme.primary
+                                        : Colors.transparent,
+                                    boxShadow: _tabController.index == 1
+                                        ? [
+                                            BoxShadow(
+                                              color: AppTheme
+                                                  .darkTheme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withAlpha(77),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
                                   ),
                                   child: Center(
                                     child: Text(
                                       'Sign Up',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleMedium?.copyWith(
-                                        color:
-                                            _tabController.index == 1
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: _tabController.index == 1
                                                 ? Colors.white
                                                 : Colors.grey.shade600,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -339,7 +326,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Widget _buildSignInForm() {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -496,8 +483,8 @@ class _AuthScreenState extends State<AuthScreen>
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 ),
-                onPressed:
-                    () => setState(() => _obscurePassword = !_obscurePassword),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -537,30 +524,27 @@ class _AuthScreenState extends State<AuthScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child:
-                  _isLoading
-                      ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                      : const Text('Sign In'),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Sign In'),
             ),
           ),
 
-          const Spacer(),
+          SizedBox(height: 2.h),
         ],
       ),
     );
   }
 
   Widget _buildSignUpForm() {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.all(4.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -602,8 +586,8 @@ class _AuthScreenState extends State<AuthScreen>
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 ),
-                onPressed:
-                    () => setState(() => _obscurePassword = !_obscurePassword),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -625,10 +609,9 @@ class _AuthScreenState extends State<AuthScreen>
                       ? Icons.visibility_off
                       : Icons.visibility,
                 ),
-                onPressed:
-                    () => setState(
-                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
-                    ),
+                onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -650,22 +633,19 @@ class _AuthScreenState extends State<AuthScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child:
-                  _isLoading
-                      ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                      : const Text('Create Account'),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Create Account'),
             ),
           ),
-          const Spacer(),
+          SizedBox(height: 2.h),
         ],
       ),
     );

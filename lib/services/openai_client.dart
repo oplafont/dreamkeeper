@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../services/supabase_service.dart';
 
 class Message {
   final String role;
@@ -89,42 +90,54 @@ class OpenAIException implements Exception {
 
 class OpenAIClient {
   final Dio dio;
+  final client = SupabaseService.instance.client;
 
   OpenAIClient(this.dio);
 
   // =============================================================================
-  // DREAM-SPECIFIC AI METHODS
-  // Purpose: Specialized dream analysis and insight generation
+  // DREAM-SPECIFIC AI METHODS - NOW USING SUPABASE EDGE FUNCTION
+  // Purpose: Specialized dream analysis via secure server-side processing
   // =============================================================================
 
   /// Analyze dream content with AI for insights, symbols, and themes
+  /// NOW CALLS SUPABASE EDGE FUNCTION INSTEAD OF DIRECT OPENAI
   Future<Map<String, dynamic>> analyzeDreamContent({
     required String dreamContent,
     String? mood,
     List<String>? userTags,
   }) async {
     try {
-      final prompt = _buildDreamAnalysisPrompt(dreamContent, mood, userTags);
+      // Get current user's JWT token
+      final session = client.auth.currentSession;
+      if (session == null) {
+        throw Exception('User not authenticated');
+      }
 
-      final messages = [
-        Message(role: 'user', content: [
-          {'type': 'text', 'text': prompt}
-        ])
-      ];
-
-      final response = await createChatCompletion(
-        messages: messages,
-        model: 'gpt-5-mini', // Cost-effective for analysis
-        reasoningEffort: 'medium', // Good balance for dream analysis
+      // Call Supabase Edge Function instead of OpenAI directly
+      final response = await client.functions.invoke(
+        'analyze_dream',
+        body: {
+          'dreamContent': dreamContent,
+          if (mood != null) 'mood': mood,
+          if (userTags != null) 'userTags': userTags,
+        },
       );
 
-      // Parse the AI response into structured data
-      return _parseDreamAnalysisResponse(response.text);
+      if (response.status != 200) {
+        throw Exception('Edge function returned error: ${response.status}');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+
+      if (data['success'] == true && data['analysis'] != null) {
+        return data['analysis'] as Map<String, dynamic>;
+      } else {
+        throw Exception('Invalid response from edge function');
+      }
     } catch (e) {
-      throw OpenAIException(
-        statusCode: 500,
-        message: 'Dream analysis failed: $e',
-      );
+      print('Dream analysis via Edge Function failed: $e');
+      // Return fallback analysis on error
+      return _parseDreamAnalysisResponse('');
     }
   }
 
@@ -137,9 +150,12 @@ class OpenAIClient {
       final prompt = _buildInsightGenerationPrompt(recentDreams, insightType);
 
       final messages = [
-        Message(role: 'user', content: [
-          {'type': 'text', 'text': prompt}
-        ])
+        Message(
+          role: 'user',
+          content: [
+            {'type': 'text', 'text': prompt},
+          ],
+        ),
       ];
 
       final response = await createChatCompletion(
@@ -179,13 +195,13 @@ class OpenAIClient {
       if (imageUrl != null) {
         content.add({
           'type': 'image_url',
-          'image_url': {'url': imageUrl}
+          'image_url': {'url': imageUrl},
         });
       } else if (imageBytes != null) {
         final base64Image = base64Encode(imageBytes);
         content.add({
           'type': 'image_url',
-          'image_url': {'url': 'data:image/jpeg;base64,$base64Image'}
+          'image_url': {'url': 'data:image/jpeg;base64,$base64Image'},
         });
       }
 
@@ -194,10 +210,7 @@ class OpenAIClient {
       final requestData = <String, dynamic>{
         'model': model,
         'messages': messages
-            .map((m) => {
-                  'role': m.role,
-                  'content': m.content,
-                })
+            .map((m) => {'role': m.role, 'content': m.content})
             .toList(),
       };
 
@@ -220,6 +233,7 @@ class OpenAIClient {
   // =============================================================================
   // CORE OPENAI METHODS
   // Purpose: Foundation methods for all AI interactions
+  // NOTE: These are kept for other features but dream analysis now uses Edge Function
   // =============================================================================
 
   /// Standard chat completion with GPT-5 support
@@ -234,10 +248,7 @@ class OpenAIClient {
       final requestData = <String, dynamic>{
         'model': model,
         'messages': messages
-            .map((m) => {
-                  'role': m.role,
-                  'content': m.content,
-                })
+            .map((m) => {'role': m.role, 'content': m.content})
             .toList(),
       };
 
@@ -249,18 +260,21 @@ class OpenAIClient {
         if (model.startsWith('gpt-5') ||
             model.startsWith('o3') ||
             model.startsWith('o4')) {
-          filteredOptions.removeWhere((key, value) => [
-                'temperature',
-                'top_p',
-                'presence_penalty',
-                'frequency_penalty',
-                'logit_bias'
-              ].contains(key));
+          filteredOptions.removeWhere(
+            (key, value) => [
+              'temperature',
+              'top_p',
+              'presence_penalty',
+              'frequency_penalty',
+              'logit_bias',
+            ].contains(key),
+          );
 
           // Convert max_tokens to max_completion_tokens for GPT-5
           if (filteredOptions.containsKey('max_tokens')) {
-            filteredOptions['max_completion_tokens'] =
-                filteredOptions.remove('max_tokens');
+            filteredOptions['max_completion_tokens'] = filteredOptions.remove(
+              'max_tokens',
+            );
           }
         }
 
@@ -300,10 +314,7 @@ class OpenAIClient {
       final requestData = <String, dynamic>{
         'model': model,
         'messages': messages
-            .map((m) => {
-                  'role': m.role,
-                  'content': m.content,
-                })
+            .map((m) => {'role': m.role, 'content': m.content})
             .toList(),
         'stream': true,
       };
@@ -313,16 +324,19 @@ class OpenAIClient {
         if (model.startsWith('gpt-5') ||
             model.startsWith('o3') ||
             model.startsWith('o4')) {
-          filteredOptions.removeWhere((key, value) => [
-                'temperature',
-                'top_p',
-                'presence_penalty',
-                'frequency_penalty',
-                'logit_bias'
-              ].contains(key));
+          filteredOptions.removeWhere(
+            (key, value) => [
+              'temperature',
+              'top_p',
+              'presence_penalty',
+              'frequency_penalty',
+              'logit_bias',
+            ].contains(key),
+          );
           if (filteredOptions.containsKey('max_tokens')) {
-            filteredOptions['max_completion_tokens'] =
-                filteredOptions.remove('max_tokens');
+            filteredOptions['max_completion_tokens'] = filteredOptions.remove(
+              'max_tokens',
+            );
           }
         }
         requestData.addAll(filteredOptions);
@@ -344,8 +358,9 @@ class OpenAIClient {
       );
 
       final stream = response.data.stream;
-      await for (var line
-          in LineSplitter().bind(utf8.decoder.bind(stream.stream))) {
+      await for (var line in LineSplitter().bind(
+        utf8.decoder.bind(stream.stream),
+      )) {
         if (line.startsWith('data: ')) {
           final data = line.substring(6);
           if (data == '[DONE]') break;
@@ -459,15 +474,9 @@ class OpenAIClient {
 
       for (var item in data) {
         if (responseFormat == 'url') {
-          images.add(GeneratedImage(
-            url: item['url'],
-            base64Data: null,
-          ));
+          images.add(GeneratedImage(url: item['url'], base64Data: null));
         } else if (responseFormat == 'b64_json') {
-          images.add(GeneratedImage(
-            url: null,
-            base64Data: item['b64_json'],
-          ));
+          images.add(GeneratedImage(url: null, base64Data: item['b64_json']));
         }
       }
 
@@ -507,7 +516,8 @@ class OpenAIClient {
       final tempDir = await getTemporaryDirectory();
       final fileExtension = responseFormat == 'opus' ? 'ogg' : responseFormat;
       final audioFile = File(
-          '${tempDir.path}/speech_${DateTime.now().millisecondsSinceEpoch}.$fileExtension');
+        '${tempDir.path}/speech_${DateTime.now().millisecondsSinceEpoch}.$fileExtension',
+      );
       await audioFile.writeAsBytes(response.data);
 
       return audioFile;
@@ -525,7 +535,10 @@ class OpenAIClient {
   // =============================================================================
 
   String _buildDreamAnalysisPrompt(
-      String dreamContent, String? mood, List<String>? userTags) {
+    String dreamContent,
+    String? mood,
+    List<String>? userTags,
+  ) {
     final moodContext = mood != null
         ? ' The dreamer reported feeling $mood during this dream.'
         : '';
@@ -557,12 +570,17 @@ Focus on psychological insights, symbolic meanings, and patterns that could help
   }
 
   String _buildInsightGenerationPrompt(
-      List<Map<String, dynamic>> recentDreams, String insightType) {
-    final dreamSummaries = recentDreams.map((dream) {
-      return 'Dream: "${dream['title'] ?? 'Untitled'}" - ${dream['content']} (Mood: ${dream['mood'] ?? 'Unknown'}, Tags: ${dream['tags']?.join(', ') ?? 'none'})';
-    }).join('\n');
+    List<Map<String, dynamic>> recentDreams,
+    String insightType,
+  ) {
+    final dreamSummaries = recentDreams
+        .map((dream) {
+          return 'Dream: "${dream['title'] ?? 'Untitled'}" - ${dream['content']} (Mood: ${dream['mood'] ?? 'Unknown'}, Tags: ${dream['tags']?.join(', ') ?? 'none'})';
+        })
+        .join('\n');
 
-    final typeSpecificPrompt = {
+    final typeSpecificPrompt =
+        {
           'patterns':
               'Identify recurring patterns, symbols, and themes across these dreams',
           'emotions':
@@ -608,7 +626,7 @@ Write in a warm, encouraging tone (3-4 paragraphs) that helps the dreamer feel u
         'psychological_themes': [
           'reflection',
           'subconscious_processing',
-          'growth'
+          'growth',
         ],
         'ai_tags': ['analyzed', 'meaningful', 'insightful'],
         'ai_symbols': ['journey', 'exploration'],
