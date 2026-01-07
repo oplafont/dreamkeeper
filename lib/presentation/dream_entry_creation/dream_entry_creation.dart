@@ -4,6 +4,8 @@ import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import '../../models/dream.dart';
+import '../../services/dream_service.dart';
+import '../../services/supabase_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_icon_widget.dart';
 import './widgets/clarity_score_widget.dart';
@@ -34,12 +36,21 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
   double _clarityScore = 7.0;
   DateTime _dreamDate = DateTime.now();
   TimeOfDay _dreamTime = TimeOfDay.now();
+  String? _audioRecordingPath;
 
   // UI state
   bool _hasUnsavedChanges = false;
   bool _isAutoSaving = false;
   DateTime? _lastAutoSave;
   bool _showDetails = false;
+  bool _isSaving = false;
+
+  // Text controllers
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+
+  // Form validation
+  bool _isFormValid = false;
 
   @override
   void initState() {
@@ -173,41 +184,86 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
     return result ?? false;
   }
 
-  void _saveDream() {
-    if (_dreamText.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please add a dream description before saving'),
-          backgroundColor: AppTheme.lightTheme.colorScheme.error,
-        ),
-      );
+  void _handleRecordingComplete(String audioPath, String transcribedText) {
+    setState(() {
+      _audioRecordingPath = audioPath;
+
+      // Insert transcribed text into dream content field
+      if (transcribedText.isNotEmpty) {
+        final currentText = _contentController.text;
+        final newText = currentText.isEmpty
+            ? transcribedText
+            : '$currentText\n\n$transcribedText';
+
+        _contentController.text = newText;
+        _contentController.selection = TextSelection.fromPosition(
+          TextPosition(offset: newText.length),
+        );
+      }
+    });
+  }
+
+  Future<void> _saveDream() async {
+    if (_contentController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please add dream content')));
       return;
     }
 
-    // Simulate saving
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
+    setState(() => _isSaving = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pop(); // Close loading dialog
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Dream saved successfully!'),
-          backgroundColor: AppTheme.lightTheme.colorScheme.secondary,
-        ),
+    try {
+      final dream = Dream(
+        id: '',
+        userId: SupabaseService.instance.client.auth.currentUser!.id,
+        title: _titleController.text.isEmpty
+            ? 'Untitled Dream'
+            : _titleController.text,
+        content: _contentController.text,
+        mood: _selectedMood,
+        tags: _selectedTags,
+        dreamDate: _dreamDate,
+        sleepQuality: _sleepQuality.toStringAsFixed(1),
+        clarityScore: _clarityScore.round(),
+        isLucid: false,
+        isNightmare: false,
+        isRecurring: false,
+        audioRecordingPath: _audioRecordingPath,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
-      Navigator.of(context).pop(); // Return to previous screen
-    });
+      await DreamService().createDream(content: dream.content);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dream saved successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving dream: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _titleController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -287,419 +343,405 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
             ),
           ],
         ),
-        body: Container(
-          decoration: AppTheme.dreamEntryGradient,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              children: [
-                // Main Voice Recording Section - Central and Large
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(8.w),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 12.h), // Extra space for app bar
-                      // Big Voice Recording Button
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(4.w),
+          child: Column(
+            children: [
+              // Main Voice Recording Section - Central and Large
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(8.w),
+                child: Column(
+                  children: [
+                    SizedBox(height: 12.h), // Extra space for app bar
+                    // Big Voice Recording Button
+                    Container(
+                      width: 50.w,
+                      height: 50.w,
+                      child: VoiceRecordingWidget(
+                        onRecordingComplete: _handleRecordingComplete,
+                      ),
+                    ),
+
+                    SizedBox(height: 4.h),
+
+                    Text(
+                      'Tap to record your dream',
+                      style: AppTheme.lightTheme.textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    SizedBox(height: 2.h),
+
+                    Text(
+                      'Speak naturally and clearly about what you remember',
+                      style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.white70,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    SizedBox(height: 6.h),
+
+                    // Quick Text Entry (Optional)
+                    if (_dreamText.isNotEmpty) ...[
                       Container(
-                        width: 50.w,
-                        height: 50.w,
-                        child: VoiceRecordingWidget(
-                          onTranscriptionComplete: (transcription) {
-                            setState(() {
-                              _dreamText = _dreamText.isEmpty
-                                  ? transcription
-                                  : '$_dreamText\n\n$transcription';
-                            });
-                            _markAsChanged();
-                          },
+                        width: double.infinity,
+                        padding: EdgeInsets.all(4.w),
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Your Dream:',
+                              style: AppTheme.lightTheme.textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            SizedBox(height: 1.h),
+                            Text(
+                              _dreamText,
+                              style: AppTheme.lightTheme.textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.white),
+                            ),
+                          ],
                         ),
                       ),
-
                       SizedBox(height: 4.h),
+                    ],
 
-                      Text(
-                        'Tap to record your dream',
-                        style: AppTheme.lightTheme.textTheme.headlineSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                    // Add Details Button
+                    if (!_showDetails)
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showDetails = true;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Add more details',
+                              style: AppTheme.lightTheme.textTheme.bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
-                        textAlign: TextAlign.center,
+                            SizedBox(width: 2.w),
+                            CustomIconWidget(
+                              iconName: 'expand_more',
+                              color: Colors.white,
+                              size: 5.w,
+                            ),
+                          ],
+                        ),
                       ),
+                  ],
+                ),
+              ),
 
-                      SizedBox(height: 2.h),
+              // Optional Details Section
+              if (_showDetails) ...[
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(6.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Additional Details',
+                              style: AppTheme.lightTheme.textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showDetails = false;
+                                });
+                              },
+                              icon: CustomIconWidget(
+                                iconName: 'expand_less',
+                                color:
+                                    AppTheme.lightTheme.colorScheme.onSurface,
+                                size: 6.w,
+                              ),
+                            ),
+                          ],
+                        ),
 
-                      Text(
-                        'Speak naturally and clearly about what you remember',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      ),
+                        SizedBox(height: 3.h),
 
-                      SizedBox(height: 6.h),
+                        // Rich Text Editor
+                        RichTextEditorWidget(
+                          initialText: _dreamText,
+                          onTextChanged: (text) {
+                            _dreamText = text;
+                            _markAsChanged();
+                          },
+                          placeholder: 'Add more details or edit your dream...',
+                        ),
 
-                      // Quick Text Entry (Optional)
-                      if (_dreamText.isNotEmpty) ...[
+                        SizedBox(height: 4.h),
+
+                        // Date and Time Selection with Quick Preset
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.all(4.w),
-                          margin: EdgeInsets.symmetric(horizontal: 4.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: AppTheme.lightTheme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: AppTheme.lightTheme.colorScheme.outline,
                               width: 1,
                             ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Your Dream:',
-                                style: AppTheme.lightTheme.textTheme.titleSmall
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'When did you have this dream?',
+                                    style: AppTheme
+                                        .lightTheme
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  OutlinedButton.icon(
+                                    onPressed: _setLastNight,
+                                    icon: Icon(
+                                      Icons.nightlight_round,
+                                      size: 4.w,
                                     ),
-                              ),
-                              SizedBox(height: 1.h),
-                              Text(
-                                _dreamText,
-                                style: AppTheme.lightTheme.textTheme.bodyMedium
-                                    ?.copyWith(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                      ],
-
-                      // Add Details Button
-                      if (!_showDetails)
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _showDetails = true;
-                            });
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Add more details',
-                                style: AppTheme.lightTheme.textTheme.bodyLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                              SizedBox(width: 2.w),
-                              CustomIconWidget(
-                                iconName: 'expand_more',
-                                color: Colors.white,
-                                size: 5.w,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Optional Details Section
-                if (_showDetails) ...[
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(6.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Section Header
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Additional Details',
-                                style: AppTheme.lightTheme.textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _showDetails = false;
-                                  });
-                                },
-                                icon: CustomIconWidget(
-                                  iconName: 'expand_less',
-                                  color:
-                                      AppTheme.lightTheme.colorScheme.onSurface,
-                                  size: 6.w,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: 3.h),
-
-                          // Rich Text Editor
-                          RichTextEditorWidget(
-                            initialText: _dreamText,
-                            onTextChanged: (text) {
-                              _dreamText = text;
-                              _markAsChanged();
-                            },
-                            placeholder:
-                                'Add more details or edit your dream...',
-                          ),
-
-                          SizedBox(height: 4.h),
-
-                          // Date and Time Selection with Quick Preset
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(4.w),
-                            decoration: BoxDecoration(
-                              color: AppTheme.lightTheme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppTheme.lightTheme.colorScheme.outline,
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'When did you have this dream?',
-                                      style: AppTheme
-                                          .lightTheme
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    OutlinedButton.icon(
-                                      onPressed: _setLastNight,
-                                      icon: Icon(
-                                        Icons.nightlight_round,
-                                        size: 4.w,
+                                    label: Text('Last Night'),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 3.w,
+                                        vertical: 1.h,
                                       ),
-                                      label: Text('Last Night'),
-                                      style: OutlinedButton.styleFrom(
+                                      side: BorderSide(
+                                        color: AppTheme
+                                            .lightTheme
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 2.h),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: _selectDate,
+                                      child: Container(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: 3.w,
-                                          vertical: 1.h,
+                                          horizontal: 4.w,
+                                          vertical: 2.h,
                                         ),
-                                        side: BorderSide(
+                                        decoration: BoxDecoration(
                                           color: AppTheme
                                               .lightTheme
                                               .colorScheme
-                                              .primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 2.h),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: _selectDate,
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 4.w,
-                                            vertical: 2.h,
+                                              .surface,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
                                           ),
-                                          decoration: BoxDecoration(
+                                          border: Border.all(
                                             color: AppTheme
                                                 .lightTheme
                                                 .colorScheme
-                                                .surface,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            border: Border.all(
+                                                .outline,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            CustomIconWidget(
+                                              iconName: 'calendar_today',
                                               color: AppTheme
                                                   .lightTheme
                                                   .colorScheme
-                                                  .outline,
-                                              width: 1,
+                                                  .secondary,
+                                              size: 5.w,
                                             ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              CustomIconWidget(
-                                                iconName: 'calendar_today',
-                                                color: AppTheme
-                                                    .lightTheme
-                                                    .colorScheme
-                                                    .secondary,
-                                                size: 5.w,
-                                              ),
-                                              SizedBox(width: 2.w),
-                                              Text(
-                                                '${_dreamDate.day}/${_dreamDate.month}/${_dreamDate.year}',
-                                                style: AppTheme
-                                                    .lightTheme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
+                                            SizedBox(width: 2.w),
+                                            Text(
+                                              '${_dreamDate.day}/${_dreamDate.month}/${_dreamDate.year}',
+                                              style: AppTheme
+                                                  .lightTheme
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                    SizedBox(width: 3.w),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: _selectTime,
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 4.w,
-                                            vertical: 2.h,
+                                  ),
+                                  SizedBox(width: 3.w),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: _selectTime,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 4.w,
+                                          vertical: 2.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme
+                                              .lightTheme
+                                              .colorScheme
+                                              .surface,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
                                           ),
-                                          decoration: BoxDecoration(
+                                          border: Border.all(
                                             color: AppTheme
                                                 .lightTheme
                                                 .colorScheme
-                                                .surface,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            border: Border.all(
+                                                .outline,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            CustomIconWidget(
+                                              iconName: 'access_time',
                                               color: AppTheme
                                                   .lightTheme
                                                   .colorScheme
-                                                  .outline,
-                                              width: 1,
+                                                  .secondary,
+                                              size: 5.w,
                                             ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              CustomIconWidget(
-                                                iconName: 'access_time',
-                                                color: AppTheme
-                                                    .lightTheme
-                                                    .colorScheme
-                                                    .secondary,
-                                                size: 5.w,
-                                              ),
-                                              SizedBox(width: 2.w),
-                                              Text(
-                                                _dreamTime.format(context),
-                                                style: AppTheme
-                                                    .lightTheme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
+                                            SizedBox(width: 2.w),
+                                            Text(
+                                              _dreamTime.format(context),
+                                              style: AppTheme
+                                                  .lightTheme
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
+                        ),
 
-                          SizedBox(height: 4.h),
+                        SizedBox(height: 4.h),
 
-                          // Mood Selector
-                          MoodSelectorWidget(
-                            selectedMood: _selectedMood,
-                            onMoodChanged: (mood) {
-                              setState(() {
-                                _selectedMood = mood.isEmpty ? null : mood;
-                              });
-                              _markAsChanged();
-                            },
-                          ),
+                        // Mood Selector
+                        MoodSelectorWidget(
+                          selectedMood: _selectedMood,
+                          onMoodChanged: (mood) {
+                            setState(() {
+                              _selectedMood = mood.isEmpty ? null : mood;
+                            });
+                            _markAsChanged();
+                          },
+                        ),
 
-                          SizedBox(height: 4.h),
+                        SizedBox(height: 4.h),
 
-                          // NEW: Clarity Score Widget
-                          ClarityScoreWidget(
-                            clarityScore: _clarityScore,
-                            onClarityChanged: (score) {
-                              setState(() {
-                                _clarityScore = score;
-                              });
-                              _markAsChanged();
-                            },
-                          ),
+                        // NEW: Clarity Score Widget
+                        ClarityScoreWidget(
+                          clarityScore: _clarityScore,
+                          onClarityChanged: (score) {
+                            setState(() {
+                              _clarityScore = score;
+                            });
+                            _markAsChanged();
+                          },
+                        ),
 
-                          SizedBox(height: 4.h),
+                        SizedBox(height: 4.h),
 
-                          // Sleep Quality
-                          SleepQualityWidget(
-                            sleepQuality: _sleepQuality,
-                            onQualityChanged: (quality) {
-                              setState(() {
-                                _sleepQuality = quality;
-                              });
-                              _markAsChanged();
-                            },
-                          ),
+                        // Sleep Quality
+                        SleepQualityWidget(
+                          sleepQuality: _sleepQuality,
+                          onQualityChanged: (quality) {
+                            setState(() {
+                              _sleepQuality = quality;
+                            });
+                            _markAsChanged();
+                          },
+                        ),
 
-                          SizedBox(height: 4.h),
+                        SizedBox(height: 4.h),
 
-                          // Dream Tags
-                          DreamTagsWidget(
-                            selectedTags: _selectedTags,
-                            onTagsChanged: (tags) {
-                              setState(() {
-                                _selectedTags = tags;
-                              });
-                              _markAsChanged();
-                            },
-                          ),
+                        // Dream Tags
+                        DreamTagsWidget(
+                          selectedTags: _selectedTags,
+                          onTagsChanged: (tags) {
+                            setState(() {
+                              _selectedTags = tags;
+                            });
+                            _markAsChanged();
+                          },
+                        ),
 
-                          SizedBox(height: 4.h),
+                        SizedBox(height: 4.h),
 
-                          // Image Attachments
-                          ImageAttachmentWidget(
-                            attachedImages: _attachedImages,
-                            onImagesChanged: (images) {
-                              setState(() {
-                                _attachedImages = images;
-                              });
-                              _markAsChanged();
-                            },
-                          ),
+                        // Image Attachments
+                        ImageAttachmentWidget(
+                          attachedImages: _attachedImages,
+                          onImagesChanged: (images) {
+                            setState(() {
+                              _attachedImages = images;
+                            });
+                            _markAsChanged();
+                          },
+                        ),
 
-                          SizedBox(height: 8.h),
-                        ],
-                      ),
+                        SizedBox(height: 8.h),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

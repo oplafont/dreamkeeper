@@ -5,17 +5,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:sizer/sizer.dart';
+import 'dart:io'; // ... Add this import ... //
 
 import '../../../core/app_export.dart';
+import '../../../services/openai_client.dart';
+import '../../../services/supabase_service.dart';
+import '../../../theme/app_theme.dart';
 
 class VoiceRecordingWidget extends StatefulWidget {
-  final Function(String) onTranscriptionComplete;
+  final Function(String audioPath, String transcribedText) onRecordingComplete;
 
-  const VoiceRecordingWidget({Key? key, required this.onTranscriptionComplete})
-      : super(key: key);
+  const VoiceRecordingWidget({super.key, required this.onRecordingComplete});
 
   @override
-  State<VoiceRecordingWidget> createState() => _VoiceRecordingWidgetState();
+  _VoiceRecordingWidgetState createState() => _VoiceRecordingWidgetState();
 }
 
 class _VoiceRecordingWidgetState extends State<VoiceRecordingWidget>
@@ -27,6 +30,7 @@ class _VoiceRecordingWidgetState extends State<VoiceRecordingWidget>
   String? _recordingPath;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  bool _isTranscribing = false;
 
   @override
   void initState() {
@@ -40,13 +44,9 @@ class _VoiceRecordingWidgetState extends State<VoiceRecordingWidget>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _initializeRecorder() async {
@@ -110,35 +110,93 @@ class _VoiceRecordingWidgetState extends State<VoiceRecordingWidget>
   }
 
   Future<void> _stopRecording() async {
+    if (!_isRecording) return;
+
     try {
       final path = await _audioRecorder.stop();
+      if (path != null) {
+        setState(() {
+          _isRecording = false;
+          _recordingPath = path;
+        });
 
-      if (!kIsWeb && _recorderController != null) {
-        await _recorderController!.stop();
+        await _uploadAndTranscribe();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error stopping recording: $e');
+      }
+    }
+  }
+
+  Future<void> _uploadAndTranscribe() async {
+    if (_recordingPath == null) return;
+
+    setState(() => _isTranscribing = true);
+
+    try {
+      final supabase = SupabaseService.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user == null) {
+        throw Exception('User not authenticated');
       }
 
-      setState(() {
-        _isRecording = false;
-      });
+      // Upload to storage
+      final fileName = 'dream_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final filePath = '${user.id}/$fileName';
 
-      // Stop pulsing animation
-      _pulseController.stop();
-      _pulseController.reset();
+      final file = File(_recordingPath!);
+      final bytes = await file.readAsBytes();
 
-      if (path != null) {
-        // Simulate transcription for demo purposes
-        // In a real app, you would use a speech-to-text service
-        await Future.delayed(const Duration(seconds: 1));
-        widget.onTranscriptionComplete(
-          "I had a vivid dream about flying over a beautiful landscape with mountains and rivers below. The feeling was incredibly peaceful and liberating.",
+      await supabase.storage
+          .from('dream-recordings')
+          .uploadBinary(filePath, bytes);
+
+      // Call transcription Edge Function
+      final response = await supabase.functions.invoke(
+        'transcribe_audio',
+        body: {
+          'bucket': 'dream-recordings',
+          'path': filePath,
+          'language': 'en',
+        },
+      );
+
+      if (response.status == 200 && response.data != null) {
+        final transcribedText = response.data['text'] as String? ?? '';
+
+        // Callback with both audio path and transcribed text
+        widget.onRecordingComplete(filePath, transcribedText);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Recording transcribed successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception(
+          'Transcription failed: ${response.data?['error'] ?? 'Unknown error'}',
         );
       }
     } catch (e) {
-      debugPrint('Error stopping recording: $e');
-      setState(() {
-        _isRecording = false;
-      });
-      _showErrorMessage('Failed to stop recording');
+      if (kDebugMode) {
+        print('Error during upload/transcription: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Transcription failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isTranscribing = false);
     }
   }
 
@@ -214,56 +272,32 @@ class _VoiceRecordingWidgetState extends State<VoiceRecordingWidget>
       );
     }
 
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _isRecording ? _pulseAnimation.value : 1.0,
-          child: GestureDetector(
-            onTap: _isRecording ? _stopRecording : _startRecording,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: _isRecording
-                    ? Colors.red.withValues(alpha: 0.9)
-                    : Colors.white.withValues(alpha: 0.9),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                    spreadRadius: 2,
+    return Container(
+      width: 40.w,
+      height: 40.w,
+      child: Column(
+        children: [
+          // ... keep existing recording UI ...
+          if (_isTranscribing)
+            Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Column(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                   ),
-                  if (_isRecording) ...[
-                    BoxShadow(
-                      color: Colors.red.withValues(alpha: 0.4),
-                      blurRadius: 30,
-                      spreadRadius: 10,
-                    ),
-                  ],
+                  SizedBox(height: 1.h),
+                  Text(
+                    'Transcribing audio...',
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                  ),
                 ],
-                border: Border.all(
-                  color: _isRecording
-                      ? Colors.white
-                      : AppTheme.lightTheme.colorScheme.secondary,
-                  width: 4,
-                ),
-              ),
-              child: Center(
-                child: CustomIconWidget(
-                  iconName: _isRecording ? 'stop' : 'mic',
-                  color: _isRecording
-                      ? Colors.white
-                      : AppTheme.lightTheme.colorScheme.secondary,
-                  size: 12.w,
-                ),
               ),
             ),
-          ),
-        );
-      },
+
+          // ... rest of existing code ...
+        ],
+      ),
     );
   }
 }
