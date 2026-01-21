@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -135,38 +137,38 @@ class _AuthScreenState extends State<AuthScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Header
+              // Header - Compact version
               Padding(
-                padding: EdgeInsets.all(4.w),
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.w),
                 child: Column(
                   children: [
-                    SizedBox(height: 8.h),
-                    // Moon icon
+                    SizedBox(height: 2.h),
+                    // Moon icon - Smaller
                     Container(
-                      padding: EdgeInsets.all(4.w),
+                      padding: EdgeInsets.all(2.5.w),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withAlpha(26),
                       ),
                       child: Icon(
                         Icons.nightlight_rounded,
-                        size: 12.w,
+                        size: 8.w,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 3.h),
+                    SizedBox(height: 1.5.h),
                     Text(
                       'DreamDecoder',
-                      style: Theme.of(context).textTheme.headlineLarge
+                      style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
-                    SizedBox(height: 1.h),
+                    SizedBox(height: 0.5.h),
                     Text(
                       'REMember your nights, decode your days',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withAlpha(204),
                       ),
                     ),
@@ -174,7 +176,7 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
               ),
 
-              SizedBox(height: 4.h),
+              SizedBox(height: 2.h),
 
               // Auth Form Card
               Expanded(
@@ -188,9 +190,9 @@ class _AuthScreenState extends State<AuthScreen>
                   ),
                   child: Column(
                     children: [
-                      // Tab Bar
+                      // Tab Bar - Compact
                       Container(
-                        margin: EdgeInsets.all(4.w),
+                        margin: EdgeInsets.fromLTRB(4.w, 3.w, 4.w, 2.w),
                         padding: EdgeInsets.all(1.w),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
@@ -212,7 +214,9 @@ class _AuthScreenState extends State<AuthScreen>
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
-                                  padding: EdgeInsets.symmetric(vertical: 3.w),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 2.5.w,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
                                     color: _tabController.index == 0
@@ -259,7 +263,9 @@ class _AuthScreenState extends State<AuthScreen>
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
-                                  padding: EdgeInsets.symmetric(vertical: 3.w),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 2.5.w,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
                                     color: _tabController.index == 1
@@ -327,14 +333,14 @@ class _AuthScreenState extends State<AuthScreen>
 
   Widget _buildSignInForm() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Demo Credentials Section with improved visual hierarchy
+          // Demo Credentials Section - Compact version
           Container(
-            padding: EdgeInsets.all(3.5.w),
-            margin: EdgeInsets.only(bottom: 2.h),
+            padding: EdgeInsets.all(2.5.w),
+            margin: EdgeInsets.only(bottom: 1.5.h),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -344,15 +350,8 @@ class _AuthScreenState extends State<AuthScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.blue.shade300, width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.shade100.withAlpha(128),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade300, width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +359,7 @@ class _AuthScreenState extends State<AuthScreen>
                 Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(2.w),
+                      padding: EdgeInsets.all(1.5.w),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade700,
                         shape: BoxShape.circle,
@@ -368,22 +367,25 @@ class _AuthScreenState extends State<AuthScreen>
                       child: Icon(
                         Icons.info_outline,
                         color: Colors.white,
-                        size: 4.w,
+                        size: 3.5.w,
                       ),
                     ),
                     SizedBox(width: 2.w),
                     Text(
                       'Demo Credentials',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Colors.blue.shade900,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 1.5.h),
+                SizedBox(height: 1.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 2.w,
+                    vertical: 0.8.h,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(179),
                     borderRadius: BorderRadius.circular(8),
@@ -392,17 +394,17 @@ class _AuthScreenState extends State<AuthScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Dreamer: dreamer@example.com / dreampass123',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        'dreamer@example.com / dreampass123',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.blue.shade900,
                           fontFamily: 'Courier',
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(height: 0.5.h),
+                      SizedBox(height: 0.3.h),
                       Text(
-                        'Analyst: analyst@example.com / analyzepass123',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        'analyst@example.com / analyzepass123',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.blue.shade900,
                           fontFamily: 'Courier',
                           fontWeight: FontWeight.w500,
@@ -415,22 +417,22 @@ class _AuthScreenState extends State<AuthScreen>
             ),
           ),
 
-          // Visual separator with label
+          // Visual separator with label - Compact
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 2.h),
+            padding: EdgeInsets.symmetric(vertical: 1.5.h),
             child: Row(
               children: [
                 Expanded(
                   child: Divider(color: Colors.grey.shade300, thickness: 1),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 3.w),
+                  padding: EdgeInsets.symmetric(horizontal: 2.w),
                   child: Text(
                     'Sign In to Continue',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey.shade600,
                       fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ),
@@ -449,6 +451,10 @@ class _AuthScreenState extends State<AuthScreen>
               prefixIcon: const Icon(Icons.email_outlined),
               filled: true,
               fillColor: Colors.grey.shade50,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade300),
@@ -469,7 +475,7 @@ class _AuthScreenState extends State<AuthScreen>
             textInputAction: TextInputAction.next,
           ),
 
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
 
           TextField(
             controller: _passwordController,
@@ -479,6 +485,10 @@ class _AuthScreenState extends State<AuthScreen>
               prefixIcon: const Icon(Icons.lock_outline),
               filled: true,
               fillColor: Colors.grey.shade50,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -507,10 +517,10 @@ class _AuthScreenState extends State<AuthScreen>
             onSubmitted: (_) => _signIn(),
           ),
 
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.5.h),
 
           SizedBox(
-            height: 6.h,
+            height: 5.5.h,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _signIn,
               style: ElevatedButton.styleFrom(
@@ -537,7 +547,7 @@ class _AuthScreenState extends State<AuthScreen>
             ),
           ),
 
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
         ],
       ),
     );
@@ -545,29 +555,38 @@ class _AuthScreenState extends State<AuthScreen>
 
   Widget _buildSignUpForm() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          SizedBox(height: 1.h),
           TextField(
             controller: _fullNameController,
             decoration: InputDecoration(
               labelText: 'Full Name',
               hintText: 'How should we greet you?',
               prefixIcon: const Icon(Icons.person_outline),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             textInputAction: TextInputAction.next,
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
           TextField(
             controller: _emailController,
             decoration: InputDecoration(
               labelText: 'Email Address',
               hintText: 'your.email@example.com',
               prefixIcon: const Icon(Icons.email_outlined),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -575,13 +594,17 @@ class _AuthScreenState extends State<AuthScreen>
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
           TextField(
             controller: _passwordController,
             decoration: InputDecoration(
               labelText: 'Password',
-              hintText: 'Create a secure password (min. 6 characters)',
+              hintText: 'Min. 6 characters',
               prefixIcon: const Icon(Icons.lock_outline),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -596,13 +619,17 @@ class _AuthScreenState extends State<AuthScreen>
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.next,
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
           TextField(
             controller: _confirmPasswordController,
             decoration: InputDecoration(
               labelText: 'Confirm Password',
-              hintText: 'Enter your password again',
+              hintText: 'Enter password again',
               prefixIcon: const Icon(Icons.lock_outline),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 3.w,
+                vertical: 1.5.h,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscureConfirmPassword
@@ -621,9 +648,9 @@ class _AuthScreenState extends State<AuthScreen>
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _signUp(),
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.5.h),
           SizedBox(
-            height: 6.h,
+            height: 5.5.h,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _signUp,
               style: ElevatedButton.styleFrom(
@@ -645,7 +672,7 @@ class _AuthScreenState extends State<AuthScreen>
                   : const Text('Create Account'),
             ),
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.5.h),
         ],
       ),
     );
