@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../providers/dream_provider.dart';
+import '../../services/export_service.dart';
+import '../../services/logger_service.dart';
 import './widgets/professional_reports_widget.dart';
 import './widgets/research_export_widget.dart';
 import './widgets/personal_documentation_widget.dart';
@@ -572,25 +576,102 @@ class _ExportSharingCenterState extends State<ExportSharingCenter>
     });
 
     try {
-      // Simulate export processing
-      await Future.delayed(const Duration(seconds: 3));
+      final dreamProvider = context.read<DreamProvider>();
+      final dreams = dreamProvider.dreams;
 
-      if (mounted) {
+      if (dreams.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No dreams to export'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
+        return;
+      }
+
+      final anonymize = _privacySettings['anonymize_personal_data'] ?? true;
+      final includeAnalysis = _privacySettings['include_metadata'] ?? false;
+
+      dynamic file;
+      String? shareText;
+
+      // Handle different export types
+      if (exportType.toLowerCase().contains('pdf') ||
+          exportType.toLowerCase().contains('professional') ||
+          exportType.toLowerCase().contains('report')) {
+        file = await exportService.exportToPDF(
+          dreams: dreams,
+          title: 'Dream Journal Export',
+          includeAnalysis: includeAnalysis,
+          anonymize: anonymize,
+        );
+      } else if (exportType.toLowerCase().contains('json')) {
+        file = await exportService.exportToJSON(
+          dreams: dreams,
+          anonymize: anonymize,
+        );
+      } else if (exportType.toLowerCase().contains('csv')) {
+        file = await exportService.exportToCSV(
+          dreams: dreams,
+          anonymize: anonymize,
+        );
+      } else {
+        // Default to PDF
+        file = await exportService.exportToPDF(
+          dreams: dreams,
+          title: exportType,
+          includeAnalysis: includeAnalysis,
+          anonymize: anonymize,
+        );
+      }
+
+      if (file != null && mounted) {
+        // Offer to share the file
+        final shouldShare = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            title: const Text(
+              'Export Complete',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              'Your dreams have been exported. Would you like to share the file?',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Done', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                ),
+                child: const Text('Share'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldShare == true) {
+          await exportService.shareFile(file);
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$exportType exported successfully'),
             backgroundColor: const Color(0xFF10B981),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Handle view exported file
-              },
-            ),
           ),
         );
+      } else if (mounted) {
+        throw Exception('Failed to create export file');
       }
     } catch (e) {
+      log.error('Export failed', e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

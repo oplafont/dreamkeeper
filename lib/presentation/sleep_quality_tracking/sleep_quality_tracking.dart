@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../core/app_export.dart';
+import '../../providers/sleep_provider.dart';
 import '../../theme/app_theme.dart';
 import './widgets/sleep_correlation_widget.dart';
 import './widgets/sleep_debt_calculator_widget.dart';
@@ -75,57 +76,92 @@ class _SleepQualityTrackingState extends State<SleepQualityTracking> {
   Future<void> _saveSleepData() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_sleepDuration == null || _sleepDuration!.inMinutes == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please set your bedtime and wake time'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     try {
       // Show loading
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder:
-            (context) => const Center(
-              child: CircularProgressIndicator(color: AppTheme.accentPurple),
-            ),
-      );
-
-      // Save sleep data to Supabase
-      final sleepData = {
-        'bedtime': _bedtime?.toIso8601String(),
-        'wake_time': _wakeTime?.toIso8601String(),
-        'sleep_duration': _sleepDuration?.inMinutes,
-        'sleep_quality': _sleepQuality,
-        'interruptions': _interruptions,
-        'time_to_fall_asleep': _timeToFallAsleep,
-        'room_temperature': _roomTemperature,
-        'noise_level': _noiseLevel,
-        'light_exposure': _lightExposure,
-        'recorded_at': DateTime.now().toIso8601String(),
-      };
-
-      // TODO: Implement Supabase save
-      await Future.delayed(const Duration(seconds: 1)); // Placeholder
-
-      Navigator.of(context).pop(); // Close loading dialog
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sleep data saved successfully!'),
-          backgroundColor: Colors.green,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppTheme.accentPurple),
         ),
       );
 
-      setState(() {
-        _hasUnsavedChanges = false;
-      });
+      final sleepProvider = context.read<SleepProvider>();
 
-      // Navigate back
-      Navigator.of(context).pop();
+      // Determine quality string based on slider value
+      String qualityStr;
+      if (_sleepQuality <= 2.5) {
+        qualityStr = 'poor';
+      } else if (_sleepQuality <= 5.0) {
+        qualityStr = 'fair';
+      } else if (_sleepQuality <= 7.5) {
+        qualityStr = 'good';
+      } else {
+        qualityStr = 'excellent';
+      }
+
+      // Save sleep data using SleepProvider
+      final session = await sleepProvider.saveSleepSession(
+        durationMinutes: _sleepDuration!.inMinutes,
+        quality: qualityStr,
+        interruptions: _interruptions,
+        notes: 'Time to fall asleep: $_timeToFallAsleep minutes',
+        environmentFactors: {
+          'room_temperature': _roomTemperature,
+          'noise_level': _noiseLevel,
+          'light_exposure': _lightExposure,
+          'time_to_fall_asleep': _timeToFallAsleep,
+        },
+        sleepDate: _bedtime ?? DateTime.now(),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      if (session != null) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Sleep data saved successfully!'),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        setState(() {
+          _hasUnsavedChanges = false;
+        });
+
+        // Navigate back
+        Navigator.of(context).pop(true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(sleepProvider.error ?? 'Failed to save sleep data'),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
+      if (!mounted) return;
       Navigator.of(context).pop(); // Close loading dialog
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error saving sleep data: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

@@ -1,9 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../core/app_export.dart';
+import '../../providers/dream_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../services/dream_service.dart';
 import '../../theme/app_theme.dart';
@@ -43,7 +44,11 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
     });
 
     try {
-      // Load dream statistics
+      // Load dream statistics and insights
+      final dreamProvider = context.read<DreamProvider>();
+      await dreamProvider.loadStatistics();
+      await dreamProvider.loadInsights(limit: 10);
+
       final stats = await _dreamService.getDreamStatistics();
       final insights = await _dreamService.getUserInsights(limit: 10);
 
@@ -52,17 +57,21 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
         _insights = insights;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading dashboard: ${e.toString()}'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading dashboard: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -346,7 +355,7 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
                       ),
                     ),
                     Text(
-                      'Powered by OpenAI GPT-5',
+                      'Powered by AI',
                       style: AppTheme.darkTheme.textTheme.bodySmall?.copyWith(
                         color: AppTheme.accentPurpleLight,
                         fontWeight: FontWeight.w500,
@@ -829,7 +838,7 @@ class _DreamInsightsDashboardState extends State<DreamInsightsDashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your dream insights are generated using OpenAI\'s GPT-5 model, analyzing your recorded dreams to uncover patterns, symbols, and themes.',
+              'Your dream insights are generated using advanced AI, analyzing your recorded dreams to uncover patterns, symbols, and themes.',
               style: AppTheme.darkTheme.textTheme.bodyMedium?.copyWith(
                 color: AppTheme.textLightGray,
                 height: 1.4,
