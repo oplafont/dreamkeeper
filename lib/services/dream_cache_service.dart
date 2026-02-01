@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DreamCacheService {
@@ -19,7 +20,7 @@ class DreamCacheService {
       await prefs.setString('$_cachePrefix$cacheKey', jsonString);
       await prefs.setInt('$_timestampPrefix$cacheKey', timestamp);
     } catch (e) {
-      print('Cache save failed: $e');
+      debugPrint('Cache save failed: $e');
     }
   }
 
@@ -50,7 +51,7 @@ class DreamCacheService {
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
     } catch (e) {
-      print('Cache retrieval failed: $e');
+      debugPrint('Cache retrieval failed: $e');
       return null;
     }
   }
@@ -62,7 +63,7 @@ class DreamCacheService {
       await prefs.remove('$_cachePrefix$cacheKey');
       await prefs.remove('$_timestampPrefix$cacheKey');
     } catch (e) {
-      print('Cache clear failed: $e');
+      debugPrint('Cache clear failed: $e');
     }
   }
 
@@ -78,7 +79,7 @@ class DreamCacheService {
         }
       }
     } catch (e) {
-      print('Clear all caches failed: $e');
+      debugPrint('Clear all caches failed: $e');
     }
   }
 
@@ -106,9 +107,9 @@ class DreamCacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('dreams_$key');
       await prefs.remove('timestamp_$key');
-      print('Cache invalidated for key: $key');
+      debugPrint('Cache invalidated for key: $key');
     } catch (e) {
-      print('Failed to invalidate cache: $e');
+      debugPrint('Failed to invalidate cache: $e');
     }
   }
 
