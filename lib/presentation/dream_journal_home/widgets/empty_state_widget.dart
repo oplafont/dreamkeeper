@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
-import '../../../core/app_export.dart';
+import '../../../core/app_constants.dart';
+import '../../../theme/app_theme.dart';
 
 class EmptyStateWidget extends StatefulWidget {
   final VoidCallback onGetStarted;
@@ -25,16 +25,16 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
     super.initState();
 
     _floatController = AnimationController(
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
       vsync: this,
     );
 
     _fadeController = AnimationController(
-      duration: Duration(milliseconds: 1500),
+      duration: AppConstants.animationSlow,
       vsync: this,
     );
 
-    _floatAnimation = Tween<double>(begin: -10.0, end: 10.0).animate(
+    _floatAnimation = Tween<double>(begin: -8.0, end: 8.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
 
@@ -62,130 +62,78 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
         return Opacity(
           opacity: _fadeAnimation.value,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Animated illustration
                 AnimatedBuilder(
                   animation: _floatAnimation,
                   builder: (context, child) {
                     return Transform.translate(
                       offset: Offset(0, _floatAnimation.value),
                       child: Container(
-                        width: 60.w,
-                        height: 30.h,
+                        width: 200,
+                        height: 200,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppTheme.getAccentPurple().withValues(alpha: 0.1),
-                              AppTheme.lightTheme.colorScheme.secondary
-                                  .withValues(alpha: 0.1),
+                              AppTheme.primaryPurple.withOpacity(0.15),
+                              AppTheme.secondaryTeal.withOpacity(0.1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(
+                            color: AppTheme.primaryPurple.withOpacity(0.2),
+                            width: 2,
+                          ),
                         ),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Background stars
+                            // Decorative stars
                             Positioned(
-                              top: 3.h,
-                              left: 8.w,
-                              child: _buildStar(12),
+                              top: 20,
+                              left: 30,
+                              child: _buildStar(14, 0.5),
                             ),
                             Positioned(
-                              top: 8.h,
-                              right: 6.w,
-                              child: _buildStar(8),
+                              top: 40,
+                              right: 25,
+                              child: _buildStar(10, 0.3),
                             ),
                             Positioned(
-                              bottom: 6.h,
-                              left: 12.w,
-                              child: _buildStar(10),
+                              bottom: 35,
+                              left: 40,
+                              child: _buildStar(12, 0.4),
                             ),
                             Positioned(
-                              bottom: 10.h,
-                              right: 10.w,
-                              child: _buildStar(6),
+                              bottom: 50,
+                              right: 35,
+                              child: _buildStar(8, 0.35),
                             ),
-
-                            // Main illustration
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 25.w,
-                                  height: 25.w,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        AppTheme
-                                            .lightTheme.colorScheme.secondary,
-                                        AppTheme.getAccentPurple(),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme
-                                            .lightTheme.colorScheme.secondary
-                                            .withValues(alpha: 0.3),
-                                        blurRadius: 20,
-                                        spreadRadius: 5,
-                                      ),
-                                    ],
+                            // Main icon
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                gradient: AppTheme.createAccentGradient(),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryPurple.withOpacity(0.4),
+                                    blurRadius: 24,
+                                    spreadRadius: 4,
                                   ),
-                                  child: CustomIconWidget(
-                                    iconName: 'bedtime',
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                ),
-                                SizedBox(height: 2.h),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 4.w,
-                                    vertical: 1.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 10,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CustomIconWidget(
-                                        iconName: 'auto_stories',
-                                        color: AppTheme.getAccentPurple(),
-                                        size: 16,
-                                      ),
-                                      SizedBox(width: 1.w),
-                                      Text(
-                                        'Dream Journal',
-                                        style: AppTheme
-                                            .lightTheme.textTheme.bodySmall
-                                            ?.copyWith(
-                                          color: AppTheme.getAccentPurple(),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.nightlight_round,
+                                color: AppTheme.textWhite,
+                                size: 40,
+                              ),
                             ),
                           ],
                         ),
@@ -193,94 +141,112 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
                     );
                   },
                 ),
-                SizedBox(height: 4.h),
+
+                const SizedBox(height: 40),
+
+                // Title
                 Text(
-                  'Welcome to DreamDecoder',
-                  style: AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
+                  AppConstants.emptyDreamsTitle,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: AppTheme.textWhite,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.lightTheme.colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 1.h),
+
+                const SizedBox(height: 12),
+
+                // Description
                 Text(
-                  'Start capturing your dreams and unlock the mysteries of your subconscious mind',
-                  style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                  AppConstants.emptyDreamsMessage,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.textSecondary,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 4.h),
+
+                const SizedBox(height: 32),
+
+                // Tips Card
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.lightTheme.colorScheme.secondaryContainer
-                        .withValues(alpha: 0.3),
+                    color: AppTheme.cardBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppTheme.lightTheme.colorScheme.secondary
-                          .withValues(alpha: 0.2),
+                      color: AppTheme.secondaryTeal.withOpacity(0.2),
+                      width: 1,
                     ),
                   ),
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          CustomIconWidget(
-                            iconName: 'tips_and_updates',
-                            color: AppTheme.lightTheme.colorScheme.secondary,
-                            size: 20,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondaryTeal.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.tips_and_updates,
+                              color: AppTheme.secondaryTeal,
+                              size: 20,
+                            ),
                           ),
-                          SizedBox(width: 2.w),
+                          const SizedBox(width: 12),
                           Text(
-                            'Pro Tips for Better Dream Recall',
-                            style: AppTheme.lightTheme.textTheme.titleSmall
-                                ?.copyWith(
-                              color: AppTheme.lightTheme.colorScheme.secondary,
+                            'Tips for Better Dream Recall',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: AppTheme.secondaryTeal,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 1.5.h),
-                      _buildTip(
-                        'Keep your phone nearby for immediate recording',
-                      ),
-                      _buildTip('Record dreams as soon as you wake up'),
-                      _buildTip('Include emotions and vivid details'),
+                      const SizedBox(height: 16),
+                      _buildTip(context, 'Record dreams immediately after waking'),
+                      _buildTip(context, 'Speak naturally - AI will clean it up'),
+                      _buildTip(context, 'Include emotions and vivid details'),
                     ],
                   ),
                 ),
-                SizedBox(height: 4.h),
-                ElevatedButton(
-                  onPressed: widget.onGetStarted,
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 2.h,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomIconWidget(
-                        iconName: 'mic',
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        'Record Your First Dream',
-                        style:
-                            AppTheme.lightTheme.textTheme.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+
+                const SizedBox(height: 32),
+
+                // CTA Button
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.createAccentGradient(),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryPurple.withOpacity(0.4),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: widget.onGetStarted,
+                    icon: const Icon(Icons.mic, color: AppTheme.textWhite),
+                    label: Text(
+                      AppConstants.buttonRecordDream,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppTheme.textWhite,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -291,39 +257,35 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget>
     );
   }
 
-  Widget _buildStar(double size) {
-    return Container(
-      width: size,
-      height: size,
-      child: CustomIconWidget(
-        iconName: 'star',
-        color: AppTheme.getAccentPurple().withValues(alpha: 0.3),
-        size: size,
-      ),
+  Widget _buildStar(double size, double opacity) {
+    return Icon(
+      Icons.star,
+      color: AppTheme.primaryPurple.withOpacity(opacity),
+      size: size,
     );
   }
 
-  Widget _buildTip(String text) {
+  Widget _buildTip(BuildContext context, String text) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 0.5.h),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: EdgeInsets.only(top: 0.5.h),
-            width: 4,
-            height: 4,
+            margin: const EdgeInsets.only(top: 6),
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.lightTheme.colorScheme.secondary,
+              color: AppTheme.primaryPurple.withOpacity(0.6),
             ),
           ),
-          SizedBox(width: 2.w),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textMuted,
               ),
             ),
           ),

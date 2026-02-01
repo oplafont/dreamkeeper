@@ -1,19 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:sizer/sizer.dart';
 
-import '../../core/app_export.dart';
+import '../../core/app_constants.dart';
 import '../../providers/dream_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/custom_icon_widget.dart';
-import './widgets/clarity_score_widget.dart';
-import './widgets/dream_tags_widget.dart';
-import './widgets/image_attachment_widget.dart';
-import './widgets/mood_selector_widget.dart';
-import './widgets/rich_text_editor_widget.dart';
-import './widgets/sleep_quality_widget.dart';
-import './widgets/voice_recording_widget.dart';
 
 class DreamEntryCreation extends StatefulWidget {
   const DreamEntryCreation({Key? key}) : super(key: key);
@@ -24,188 +14,112 @@ class DreamEntryCreation extends StatefulWidget {
 
 class _DreamEntryCreationState extends State<DreamEntryCreation>
     with TickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
-
-  // Form data
-  String _dreamText = '';
-  List<String> _selectedTags = [];
-  String? _selectedMood;
-  List<XFile> _attachedImages = [];
-  double _sleepQuality = 5.0;
-  double _clarityScore = 7.0;
-  DateTime _dreamDate = DateTime.now();
-  TimeOfDay _dreamTime = TimeOfDay.now();
-  String? _audioRecordingPath;
-
-  // UI state
-  bool _hasUnsavedChanges = false;
-  bool _isAutoSaving = false;
-  DateTime? _lastAutoSave;
-  bool _showDetails = false;
-  bool _isSaving = false;
-
-  // Text controllers
-  final _titleController = TextEditingController();
+  // Controllers
   final _contentController = TextEditingController();
+  final _titleController = TextEditingController();
 
-  // Form validation
-  bool _isFormValid = false;
+  // Animation
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  // Recording State
+  bool _isRecording = false;
+  bool _hasRecording = false;
+  String _transcribedText = '';
+
+  // Form State
+  String? _selectedMood;
+  int _wakeUpEnergy = 3;
+  double _clarityScore = 7.0;
+  String _sleepQuality = 'good';
+  List<String> _selectedTags = [];
+  bool _setBedrimeReminder = false;
+  TimeOfDay _reminderTime = const TimeOfDay(hour: 22, minute: 0);
+
+  // UI State
+  bool _showAdvancedOptions = false;
+  bool _isSaving = false;
+  bool _isProcessingAI = false;
 
   @override
   void initState() {
     super.initState();
-    _startAutoSave();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
-  void _startAutoSave() {
-    // Auto-save every 30 seconds
-    Future.delayed(const Duration(seconds: 30), () {
-      if (mounted && _hasUnsavedChanges) {
-        _performAutoSave();
-        _startAutoSave();
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _contentController.dispose();
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _toggleRecording() {
+    setState(() {
+      _isRecording = !_isRecording;
+      if (_isRecording) {
+        _pulseController.repeat(reverse: true);
+      } else {
+        _pulseController.stop();
+        _pulseController.reset();
+        // Simulate recording completion
+        _hasRecording = true;
+        _transcribedText =
+            "I was flying over a vast ocean, the water below shimmered with golden light. There was a sense of freedom and peace. I could see dolphins swimming below, and suddenly I realized I was dreaming...";
+        _contentController.text = _transcribedText;
       }
     });
   }
 
-  void _performAutoSave() {
-    setState(() {
-      _isAutoSaving = true;
-      _lastAutoSave = DateTime.now();
-    });
+  Future<void> _performAICleanup() async {
+    if (_contentController.text.isEmpty) return;
 
-    // Simulate auto-save
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isAutoSaving = false;
-          _hasUnsavedChanges = false;
-        });
-      }
-    });
-  }
+    setState(() => _isProcessingAI = true);
 
-  void _markAsChanged() {
-    if (!_hasUnsavedChanges) {
+    // Simulate AI processing
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
       setState(() {
-        _hasUnsavedChanges = true;
+        _isProcessingAI = false;
+        // AI would clean up and enhance the text
+        _contentController.text =
+            "Flying over a vast, golden-shimmered ocean. The water glistened with ethereal light as dolphins swam gracefully below. A profound sense of freedom and peace washed over me. In that moment of clarity, I became aware—I was dreaming. A lucid experience.";
       });
-    }
-  }
 
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _dreamDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: AppTheme.lightTheme.colorScheme),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _dreamDate) {
-      setState(() {
-        _dreamDate = picked;
-      });
-      _markAsChanged();
-    }
-  }
-
-  // NEW: Quick date preset for 'Last Night'
-  void _setLastNight() {
-    final now = DateTime.now();
-    final lastNight = DateTime(now.year, now.month, now.day - 1, 23, 0);
-
-    setState(() {
-      _dreamDate = lastNight;
-      _dreamTime = TimeOfDay(hour: 23, minute: 0);
-    });
-    _markAsChanged();
-  }
-
-  Future<void> _selectTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _dreamTime,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: AppTheme.lightTheme.colorScheme),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _dreamTime) {
-      setState(() {
-        _dreamTime = picked;
-      });
-      _markAsChanged();
-    }
-  }
-
-  Future<bool> _onWillPop() async {
-    if (!_hasUnsavedChanges) return true;
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Unsaved Changes',
-          style: AppTheme.lightTheme.textTheme.titleMedium,
-        ),
-        content: Text(
-          'You have unsaved changes. Do you want to discard them?',
-          style: AppTheme.lightTheme.textTheme.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep Editing'),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.auto_fix_high, color: AppTheme.textWhite, size: 20),
+              SizedBox(width: 12),
+              Text('AI enhanced your dream entry'),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Discard',
-              style: TextStyle(color: AppTheme.lightTheme.colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
-  }
-
-  void _handleRecordingComplete(String audioPath, String transcribedText) {
-    setState(() {
-      _audioRecordingPath = audioPath;
-
-      // Insert transcribed text into dream content field
-      if (transcribedText.isNotEmpty) {
-        final currentText = _contentController.text;
-        final newText = currentText.isEmpty
-            ? transcribedText
-            : '$currentText\n\n$transcribedText';
-
-        _contentController.text = newText;
-        _contentController.selection = TextSelection.fromPosition(
-          TextPosition(offset: newText.length),
-        );
-      }
-    });
+          backgroundColor: AppTheme.primaryPurple,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   Future<void> _saveDream() async {
     if (_contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add dream content')),
+        SnackBar(
+          content: const Text('Please add dream content'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
       return;
     }
@@ -215,24 +129,12 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
     try {
       final dreamProvider = context.read<DreamProvider>();
 
-      // Determine sleep quality string
-      String sleepQualityStr;
-      if (_sleepQuality <= 2.5) {
-        sleepQualityStr = 'poor';
-      } else if (_sleepQuality <= 5.0) {
-        sleepQualityStr = 'fair';
-      } else if (_sleepQuality <= 7.5) {
-        sleepQualityStr = 'good';
-      } else {
-        sleepQualityStr = 'excellent';
-      }
-
       final dream = await dreamProvider.createDream(
         content: _contentController.text,
         title: _titleController.text.isEmpty ? null : _titleController.text,
         mood: _selectedMood,
         tags: _selectedTags.isEmpty ? null : _selectedTags,
-        sleepQuality: sleepQualityStr,
+        sleepQuality: _sleepQuality,
         clarityScore: _clarityScore.round(),
         performAIAnalysis: true,
       );
@@ -241,17 +143,25 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Dream saved and analyzed!'),
-            backgroundColor: Colors.green.shade600,
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: AppTheme.textWhite),
+                SizedBox(width: 12),
+                Text('Dream saved and analyzed!'),
+              ],
+            ),
+            backgroundColor: AppTheme.accentGreen,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(dreamProvider.error ?? 'Failed to save dream'),
-            backgroundColor: Colors.red.shade600,
+            backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -259,9 +169,10 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving dream: $e'),
-            backgroundColor: Colors.red.shade600,
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -273,488 +184,806 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    _titleController.dispose();
-    _contentController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundDarkest,
+      body: Container(
+        decoration: AppTheme.createGradientBackground(),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+
+                      // Voice Recording Section
+                      _buildVoiceRecordingSection(),
+
+                      const SizedBox(height: 24),
+
+                      // Transcribed/Written Content
+                      _buildContentSection(),
+
+                      const SizedBox(height: 24),
+
+                      // AI Cleanup Button
+                      if (_contentController.text.isNotEmpty)
+                        _buildAICleanupButton(),
+
+                      const SizedBox(height: 24),
+
+                      // Wake-up Mood & Energy
+                      _buildMoodEnergySection(),
+
+                      const SizedBox(height: 24),
+
+                      // Advanced Options Toggle
+                      _buildAdvancedOptionsToggle(),
+
+                      // Advanced Options
+                      if (_showAdvancedOptions) ...[
+                        const SizedBox(height: 24),
+                        _buildClaritySlider(),
+                        const SizedBox(height: 24),
+                        _buildSleepQualitySection(),
+                        const SizedBox(height: 24),
+                        _buildTagsSection(),
+                        const SizedBox(height: 24),
+                        _buildBedrimeReminderSection(),
+                      ],
+
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom Save Button
+              _buildBottomBar(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: Text(
-            'Record Your Dream',
-            style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+          ),
+          Text(
+            'Capture Dream',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppTheme.textWhite,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
             ),
           ),
-          backgroundColor: Colors.transparent,
-          leading: IconButton(
-            onPressed: () async {
-              if (await _onWillPop()) {
-                Navigator.of(context).pop();
-              }
-            },
-            icon: CustomIconWidget(
-              iconName: 'close',
-              color: Colors.white,
-              size: 6.w,
+          const SizedBox(width: 48), // Balance the close button
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceRecordingSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryPurple.withOpacity(0.15),
+            AppTheme.secondaryTeal.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: _isRecording
+              ? AppTheme.primaryPurple
+              : AppTheme.primaryPurple.withOpacity(0.3),
+          width: _isRecording ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Recording Button
+          GestureDetector(
+            onTap: _toggleRecording,
+            child: AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _isRecording ? _pulseAnimation.value : 1.0,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: _isRecording
+                          ? const LinearGradient(
+                              colors: [AppTheme.errorColor, AppTheme.tertiaryOrange],
+                            )
+                          : AppTheme.createAccentGradient(),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isRecording
+                                  ? AppTheme.errorColor
+                                  : AppTheme.primaryPurple)
+                              .withOpacity(0.4),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      _isRecording ? Icons.stop : Icons.mic,
+                      color: AppTheme.textWhite,
+                      size: 44,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          actions: [
-            if (_isAutoSaving)
-              Container(
-                margin: EdgeInsets.only(right: 4.w),
+
+          const SizedBox(height: 16),
+
+          // Status Text
+          Text(
+            _isRecording
+                ? 'Recording... Tap to stop'
+                : _hasRecording
+                    ? 'Tap to record again'
+                    : 'Tap to start recording',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: _isRecording ? AppTheme.tertiaryOrange : AppTheme.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          if (_isRecording) ...[
+            const SizedBox(height: 12),
+            // Recording indicator
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.errorColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '0:23', // Would be dynamic in real implementation
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.textMuted,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.edit_note, color: AppTheme.textMuted, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Dream Content',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: AppTheme.createCardDecoration(),
+          child: TextField(
+            controller: _contentController,
+            maxLines: 6,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppTheme.textPrimary,
+              height: 1.6,
+            ),
+            decoration: InputDecoration(
+              hintText: AppConstants.placeholderDreamContent,
+              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textSubtle,
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAICleanupButton() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.secondaryTeal.withOpacity(0.2),
+            AppTheme.primaryPurple.withOpacity(0.15),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.secondaryTeal.withOpacity(0.3),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isProcessingAI ? null : _performAICleanup,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isProcessingAI)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.secondaryTeal,
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.auto_fix_high,
+                    color: AppTheme.secondaryTeal,
+                    size: 22,
+                  ),
+                const SizedBox(width: 12),
+                Text(
+                  _isProcessingAI ? 'Processing...' : AppConstants.buttonAICleanup,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppTheme.secondaryTeal,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoodEnergySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'How do you feel this morning?',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: AppTheme.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Mood Chips
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: AppConstants.moodOptions.map((mood) {
+            final isSelected = _selectedMood == mood['value'];
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedMood = isSelected ? null : mood['value'] as String;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.primaryPurple.withOpacity(0.2)
+                      : AppTheme.cardBackground,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.primaryPurple
+                        : AppTheme.borderSubtle,
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      width: 4.w,
-                      height: 4.w,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                    SizedBox(width: 2.w),
                     Text(
-                      'Saving...',
-                      style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
+                      mood['emoji'] as String,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      mood['label'] as String,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isSelected
+                            ? AppTheme.primaryPurple
+                            : AppTheme.textSecondary,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
                   ],
                 ),
               ),
-            Container(
-              margin: EdgeInsets.only(right: 4.w),
-              child: ElevatedButton(
-                onPressed: _saveDream,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppTheme.lightTheme.colorScheme.primary,
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Wake-up Energy
+        Row(
+          children: [
+            const Icon(Icons.bolt, color: AppTheme.tertiaryOrange, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Wake-up Energy',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: List.generate(5, (index) {
+            final level = index + 1;
+            final isSelected = _wakeUpEnergy >= level;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _wakeUpEnergy = level),
+                child: Container(
+                  margin: EdgeInsets.only(right: index < 4 ? 8 : 0),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppTheme.tertiaryOrange.withOpacity(0.2)
+                        : AppTheme.cardBackground,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppTheme.tertiaryOrange
+                          : AppTheme.borderSubtle,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.bolt,
+                    color: isSelected
+                        ? AppTheme.tertiaryOrange
+                        : AppTheme.textSubtle,
+                    size: 20,
                   ),
                 ),
-                child: Text(
-                  'Save',
-                  style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Very Low',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.textSubtle,
+              ),
+            ),
+            Text(
+              'Very High',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.textSubtle,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdvancedOptionsToggle() {
+    return GestureDetector(
+      onTap: () => setState(() => _showAdvancedOptions = !_showAdvancedOptions),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.createCardDecoration(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.tune, color: AppTheme.textMuted, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Advanced Options',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+              ],
+            ),
+            Icon(
+              _showAdvancedOptions ? Icons.expand_less : Icons.expand_more,
+              color: AppTheme.textMuted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClaritySlider() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.visibility, color: AppTheme.secondaryTeal, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Dream Clarity',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppTheme.textMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryTeal.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_clarityScore.round()}/10',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: AppTheme.secondaryTeal,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(4.w),
-          child: Column(
+        const SizedBox(height: 12),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: AppTheme.secondaryTeal,
+            inactiveTrackColor: AppTheme.borderDefault,
+            thumbColor: AppTheme.secondaryTeal,
+            overlayColor: AppTheme.secondaryTeal.withOpacity(0.2),
+          ),
+          child: Slider(
+            value: _clarityScore,
+            min: 1,
+            max: 10,
+            divisions: 9,
+            onChanged: (value) => setState(() => _clarityScore = value),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Fuzzy',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.textSubtle,
+              ),
+            ),
+            Text(
+              'Crystal Clear',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.textSubtle,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSleepQualitySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.bedtime, color: AppTheme.primaryPurple, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Sleep Quality',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: AppConstants.sleepQualityOptions.map((option) {
+            final isSelected = _sleepQuality == option['value'];
+            return GestureDetector(
+              onTap: () {
+                setState(() => _sleepQuality = option['value'] as String);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.getSleepQualityColor(option['value'] as String)
+                          .withOpacity(0.2)
+                      : AppTheme.cardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.getSleepQualityColor(option['value'] as String)
+                        : AppTheme.borderSubtle,
+                  ),
+                ),
+                child: Text(
+                  option['label'] as String,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isSelected
+                        ? AppTheme.getSleepQualityColor(option['value'] as String)
+                        : AppTheme.textSecondary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTagsSection() {
+    final predefinedTags = ['Lucid', 'Nightmare', 'Recurring', 'Flying', 'Falling', 'Chase', 'Water', 'Family'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.tag, color: AppTheme.accentPink, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Tags',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: predefinedTags.map((tag) {
+            final isSelected = _selectedTags.contains(tag);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    _selectedTags.remove(tag);
+                  } else {
+                    _selectedTags.add(tag);
+                  }
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.accentPink.withOpacity(0.2)
+                      : AppTheme.cardBackgroundElevated,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.accentPink
+                        : AppTheme.borderSubtle,
+                  ),
+                ),
+                child: Text(
+                  '#$tag',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: isSelected ? AppTheme.accentPink : AppTheme.textMuted,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBedrimeReminderSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.createCardDecoration(
+        hasAccent: _setBedrimeReminder,
+        accentColor: AppTheme.primaryPurple,
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Main Voice Recording Section - Central and Large
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(8.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 12.h), // Extra space for app bar
-                    // Big Voice Recording Button
-                    Container(
-                      width: 50.w,
-                      height: 50.w,
-                      child: VoiceRecordingWidget(
-                        onRecordingComplete: _handleRecordingComplete,
-                      ),
-                    ),
-
-                    SizedBox(height: 4.h),
-
-                    Text(
-                      'Tap to record your dream',
-                      style: AppTheme.lightTheme.textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: 2.h),
-
-                    Text(
-                      'Speak naturally and clearly about what you remember',
-                      style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: 6.h),
-
-                    // Quick Text Entry (Optional)
-                    if (_dreamText.isNotEmpty) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(4.w),
-                        margin: EdgeInsets.symmetric(horizontal: 4.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Your Dream:',
-                              style: AppTheme.lightTheme.textTheme.titleSmall
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            SizedBox(height: 1.h),
-                            Text(
-                              _dreamText,
-                              style: AppTheme.lightTheme.textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.white),
-                            ),
-                          ],
+              Row(
+                children: [
+                  const Icon(Icons.alarm, color: AppTheme.primaryPurple, size: 22),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bedtime Reminder',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AppTheme.textWhite,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 4.h),
+                      Text(
+                        'Get reminded to prepare for sleep',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textMuted,
+                        ),
+                      ),
                     ],
-
-                    // Add Details Button
-                    if (!_showDetails)
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _showDetails = true;
-                          });
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Add more details',
-                              style: AppTheme.lightTheme.textTheme.bodyLarge
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            SizedBox(width: 2.w),
-                            CustomIconWidget(
-                              iconName: 'expand_more',
-                              color: Colors.white,
-                              size: 5.w,
-                            ),
-                          ],
-                        ),
+                  ),
+                ],
+              ),
+              Switch(
+                value: _setBedrimeReminder,
+                onChanged: (value) => setState(() => _setBedrimeReminder = value),
+                activeColor: AppTheme.primaryPurple,
+              ),
+            ],
+          ),
+          if (_setBedrimeReminder) ...[
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: _reminderTime,
+                );
+                if (time != null) {
+                  setState(() => _reminderTime = time);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryPurple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.access_time, color: AppTheme.primaryPurple, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      _reminderTime.format(context),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppTheme.primaryPurple,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
                   ],
                 ),
               ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
-              // Optional Details Section
-              if (_showDetails) ...[
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(6.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Additional Details',
-                              style: AppTheme.lightTheme.textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showDetails = false;
-                                });
-                              },
-                              icon: CustomIconWidget(
-                                iconName: 'expand_less',
-                                color:
-                                    AppTheme.lightTheme.colorScheme.onSurface,
-                                size: 6.w,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 3.h),
-
-                        // Rich Text Editor
-                        RichTextEditorWidget(
-                          initialText: _dreamText,
-                          onTextChanged: (text) {
-                            _dreamText = text;
-                            _markAsChanged();
-                          },
-                          placeholder: 'Add more details or edit your dream...',
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // Date and Time Selection with Quick Preset
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(4.w),
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightTheme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppTheme.lightTheme.colorScheme.outline,
-                              width: 1,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'When did you have this dream?',
-                                    style: AppTheme
-                                        .lightTheme
-                                        .textTheme
-                                        .titleSmall
-                                        ?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                  OutlinedButton.icon(
-                                    onPressed: _setLastNight,
-                                    icon: Icon(
-                                      Icons.nightlight_round,
-                                      size: 4.w,
-                                    ),
-                                    label: Text('Last Night'),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 3.w,
-                                        vertical: 1.h,
-                                      ),
-                                      side: BorderSide(
-                                        color: AppTheme
-                                            .lightTheme
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 2.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: _selectDate,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 4.w,
-                                          vertical: 2.h,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme
-                                              .lightTheme
-                                              .colorScheme
-                                              .surface,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: AppTheme
-                                                .lightTheme
-                                                .colorScheme
-                                                .outline,
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            CustomIconWidget(
-                                              iconName: 'calendar_today',
-                                              color: AppTheme
-                                                  .lightTheme
-                                                  .colorScheme
-                                                  .secondary,
-                                              size: 5.w,
-                                            ),
-                                            SizedBox(width: 2.w),
-                                            Text(
-                                              '${_dreamDate.day}/${_dreamDate.month}/${_dreamDate.year}',
-                                              style: AppTheme
-                                                  .lightTheme
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 3.w),
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: _selectTime,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 4.w,
-                                          vertical: 2.h,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme
-                                              .lightTheme
-                                              .colorScheme
-                                              .surface,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: AppTheme
-                                                .lightTheme
-                                                .colorScheme
-                                                .outline,
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            CustomIconWidget(
-                                              iconName: 'access_time',
-                                              color: AppTheme
-                                                  .lightTheme
-                                                  .colorScheme
-                                                  .secondary,
-                                              size: 5.w,
-                                            ),
-                                            SizedBox(width: 2.w),
-                                            Text(
-                                              _dreamTime.format(context),
-                                              style: AppTheme
-                                                  .lightTheme
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // Mood Selector
-                        MoodSelectorWidget(
-                          selectedMood: _selectedMood,
-                          onMoodChanged: (mood) {
-                            setState(() {
-                              _selectedMood = mood.isEmpty ? null : mood;
-                            });
-                            _markAsChanged();
-                          },
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // NEW: Clarity Score Widget
-                        ClarityScoreWidget(
-                          clarityScore: _clarityScore,
-                          onClarityChanged: (score) {
-                            setState(() {
-                              _clarityScore = score;
-                            });
-                            _markAsChanged();
-                          },
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // Sleep Quality
-                        SleepQualityWidget(
-                          sleepQuality: _sleepQuality,
-                          onQualityChanged: (quality) {
-                            setState(() {
-                              _sleepQuality = quality;
-                            });
-                            _markAsChanged();
-                          },
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // Dream Tags
-                        DreamTagsWidget(
-                          selectedTags: _selectedTags,
-                          onTagsChanged: (tags) {
-                            setState(() {
-                              _selectedTags = tags;
-                            });
-                            _markAsChanged();
-                          },
-                        ),
-
-                        SizedBox(height: 4.h),
-
-                        // Image Attachments
-                        ImageAttachmentWidget(
-                          attachedImages: _attachedImages,
-                          onImagesChanged: (images) {
-                            setState(() {
-                              _attachedImages = images;
-                            });
-                            _markAsChanged();
-                          },
-                        ),
-
-                        SizedBox(height: 8.h),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildBottomBar() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        border: Border(
+          top: BorderSide(color: AppTheme.borderSubtle),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: AppTheme.createAccentGradient(),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryPurple.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
             ],
+          ),
+          child: ElevatedButton(
+            onPressed: _isSaving ? null : _saveDream,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.textWhite,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.save, color: AppTheme.textWhite),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Save Dream',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppTheme.textWhite,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),

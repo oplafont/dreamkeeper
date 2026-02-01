@@ -1,126 +1,158 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// A class that contains all theme configurations for the dream journaling application.
-/// Implements the sophisticated dark reddish purple theme for a mysterious, dreamy atmosphere.
+/// Lucidlog - AI Dream Journal
+/// Theme configuration with sophisticated dark purple nighttime aesthetic
+/// Tagline: "REMember your nights, decode your days."
 class AppTheme {
   AppTheme._();
 
-  // Dark Reddish Purple Nighttime Color Palette
+  // ============================================================
+  // LUCIDLOG COLOR PALETTE
+  // ============================================================
 
-  // Core reddish purple colors
-  static const Color primaryBurgundy = Color(0xFF722F37); // Deep burgundy
-  static const Color wineRed = Color(0xFFA0153E); // Wine red
-  static const Color darkCrimson = Color(0xFF5D0E41); // Dark crimson
-  static const Color mutedPurple = Color(0xFF00224D); // Muted purple
-  static const Color backgroundDarkest = Color(
-    0xFF0F051F,
-  ); // Deepest background
+  // Core Background Colors
+  static const Color backgroundDarkest = Color(0xFF0D0B14); // Deep space navy
+  static const Color backgroundDark = Color(0xFF12101A); // Slightly lighter
+  static const Color cardBackground = Color(0xFF1A1625); // Card/surface purple-tint
+  static const Color cardBackgroundElevated = Color(0xFF221E2D); // Elevated cards
 
-  // Accent colors
-  static const Color accentRedPurple = Color(0xFFFF5F7E); // Bright red-purple
-  static const Color coralRed = Color(0xFFE94560); // Coral red
-  static const Color softPink = Color(0xFFF7DC6F); // Soft pink/gold
+  // Primary Accent - Bright Purple
+  static const Color primaryPurple = Color(0xFF8B5CF6); // Main accent
+  static const Color primaryPurpleLight = Color(0xFFA78BFA); // Lighter variant
+  static const Color primaryPurpleDark = Color(0xFF7C3AED); // Darker variant
+  static const Color primaryPurpleMuted = Color(0xFF6D28D9); // Muted variant
 
-  // Card and surface colors with reddish purple tones
-  static const Color cardDarkBurgundy = Color(0xFF3D1F26); // Dark burgundy card
-  static const Color cardMediumPurple = Color(0xFF5D2E46); // Medium purple card
-  static const Color surfaceDarkPurple = Color(0xFF722F37); // Surface color
+  // Secondary Accent - Teal
+  static const Color secondaryTeal = Color(0xFF06B6D4); // Cyan/Teal
+  static const Color secondaryTealLight = Color(0xFF22D3EE); // Light teal
+  static const Color secondaryTealDark = Color(0xFF0891B2); // Dark teal
 
-  // Text colors for dark theme
-  static const Color textWhite = Color(0xFFFFFFFF); // Pure white for headings
-  static const Color textLightGray = Color(
-    0xFFF5F5F7,
-  ); // Brighter light gray for maximum body text readability
-  static const Color textMediumGray = Color(
-    0xFFE8E8EA,
-  ); // Brighter medium gray for excellent secondary text visibility
-  static const Color textDisabledGray = Color(
-    0xFFB8B8BA,
-  ); // Brighter disabled text for better contrast
+  // Tertiary Accent - Coral
+  static const Color tertiaryOrange = Color(0xFFF97316); // Coral/Orange
+  static const Color tertiaryOrangeLight = Color(0xFFFB923C); // Light coral
+  static const Color tertiaryOrangeDark = Color(0xFFEA580C); // Dark coral
 
-  // Success, warning, and error colors
+  // Additional Accents
+  static const Color accentPink = Color(0xFFEC4899); // Pink accent
+  static const Color accentGreen = Color(0xFF10B981); // Success green
+  static const Color accentYellow = Color(0xFFFBBF24); // Warning yellow
+  static const Color accentRed = Color(0xFFEF4444); // Error red
+
+  // Text Colors
+  static const Color textWhite = Color(0xFFFFFFFF); // Pure white
+  static const Color textPrimary = Color(0xFFF8FAFC); // Main text
+  static const Color textSecondary = Color(0xFFCBD5E1); // Secondary text
+  static const Color textMuted = Color(0xFF94A3B8); // Muted/disabled text
+  static const Color textSubtle = Color(0xFF64748B); // Very subtle text
+
+  // Border & Divider Colors
+  static const Color borderDefault = Color(0xFF2D2640); // Default border
+  static const Color borderSubtle = Color(0xFF1E1B2E); // Subtle border
+  static const Color borderAccent = Color(0xFF8B5CF6); // Accent border
+  static const Color dividerColor = Color(0xFF2D2640); // Dividers
+
+  // Gradient Colors
+  static const Color gradientStart = Color(0xFF8B5CF6); // Purple
+  static const Color gradientMiddle = Color(0xFF06B6D4); // Teal
+  static const Color gradientEnd = Color(0xFFF97316); // Coral
+
+  // Status Colors
   static const Color successColor = Color(0xFF10B981); // Green
-  static const Color warningColor = Color(0xFFF59E0B); // Amber
+  static const Color warningColor = Color(0xFFFBBF24); // Amber
   static const Color errorColor = Color(0xFFEF4444); // Red
+  static const Color infoColor = Color(0xFF06B6D4); // Teal
 
-  // Border and divider colors with reddish tones
-  static const Color borderPurple = Color(0xFF8B3A62); // Reddish purple border
-  static const Color dividerPurple = Color(0xFF6B2D5C); // Purple divider
+  // Dream Category Colors
+  static const Color lucidDreamColor = Color(0xFF8B5CF6); // Purple
+  static const Color nightmareColor = Color(0xFFEF4444); // Red
+  static const Color recurringColor = Color(0xFFFBBF24); // Yellow
+  static const Color prophericColor = Color(0xFF06B6D4); // Teal
+  static const Color normalDreamColor = Color(0xFF64748B); // Gray
 
-  // Legacy purple colors (kept for compatibility)
-  static const Color primaryDarkPurple = primaryBurgundy;
-  static const Color primaryDarkBlue = darkCrimson;
-  static const Color accentPurple = accentRedPurple;
-  static const Color accentPurpleLight = coralRed;
-  static const Color cardDarkPurple = cardDarkBurgundy;
+  // Sleep Quality Colors
+  static const Color sleepExcellent = Color(0xFF10B981); // Green
+  static const Color sleepGood = Color(0xFF06B6D4); // Teal
+  static const Color sleepFair = Color(0xFFFBBF24); // Yellow
+  static const Color sleepPoor = Color(0xFFF97316); // Orange
+  static const Color sleepTerrible = Color(0xFFEF4444); // Red
 
-  /// Dark theme with sophisticated reddish purple nighttime aesthetic
+  // ============================================================
+  // DARK THEME (PRIMARY THEME)
+  // ============================================================
+
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
+    useMaterial3: true,
+
     colorScheme: ColorScheme(
       brightness: Brightness.dark,
-      primary: accentRedPurple,
+      primary: primaryPurple,
       onPrimary: textWhite,
-      primaryContainer: primaryBurgundy,
+      primaryContainer: primaryPurpleDark,
       onPrimaryContainer: textWhite,
-      secondary: coralRed,
+      secondary: secondaryTeal,
       onSecondary: textWhite,
-      secondaryContainer: cardDarkBurgundy,
-      onSecondaryContainer: textLightGray,
-      tertiary: softPink,
-      onTertiary: primaryBurgundy,
-      tertiaryContainer: cardMediumPurple,
-      onTertiaryContainer: textLightGray,
+      secondaryContainer: secondaryTealDark,
+      onSecondaryContainer: textWhite,
+      tertiary: tertiaryOrange,
+      onTertiary: textWhite,
+      tertiaryContainer: tertiaryOrangeDark,
+      onTertiaryContainer: textWhite,
       error: errorColor,
       onError: textWhite,
-      surface: cardDarkBurgundy,
-      onSurface: textLightGray,
-      onSurfaceVariant: textMediumGray,
-      outline: borderPurple,
-      outlineVariant: borderPurple.withAlpha(128),
+      surface: cardBackground,
+      onSurface: textPrimary,
+      onSurfaceVariant: textSecondary,
+      outline: borderDefault,
+      outlineVariant: borderSubtle,
       shadow: Colors.black87,
       scrim: Colors.black87,
       inverseSurface: textWhite,
       onInverseSurface: backgroundDarkest,
-      inversePrimary: primaryBurgundy,
+      inversePrimary: primaryPurpleDark,
     ),
-    scaffoldBackgroundColor: backgroundDarkest,
-    cardColor: cardDarkBurgundy,
-    dividerColor: dividerPurple,
 
-    // AppBar with reddish purple theme
-    appBarTheme: AppBarThemeData(
-      backgroundColor: primaryBurgundy,
+    scaffoldBackgroundColor: backgroundDarkest,
+    cardColor: cardBackground,
+    dividerColor: dividerColor,
+
+    // AppBar Theme
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent,
       foregroundColor: textWhite,
       elevation: 0,
-      shadowColor: Colors.black54,
+      scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      centerTitle: false,
       titleTextStyle: GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0.15,
+        letterSpacing: -0.5,
       ),
-      iconTheme: IconThemeData(color: textWhite),
-      actionsIconTheme: IconThemeData(color: textWhite),
+      iconTheme: const IconThemeData(color: textWhite, size: 24),
+      actionsIconTheme: const IconThemeData(color: textWhite, size: 24),
     ),
 
-    // Card theme with dark burgundy background
+    // Card Theme
     cardTheme: CardThemeData(
-      color: cardDarkBurgundy,
-      elevation: 4,
-      shadowColor: Colors.black54,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      color: cardBackground,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        side: BorderSide(color: borderSubtle, width: 1),
+      ),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
 
-    // Bottom navigation with reddish purple theme
+    // Bottom Navigation
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: primaryBurgundy,
-      selectedItemColor: coralRed,
-      unselectedItemColor: textMediumGray,
-      elevation: 8,
+      backgroundColor: cardBackground,
+      selectedItemColor: primaryPurple,
+      unselectedItemColor: textMuted,
+      elevation: 0,
       type: BottomNavigationBarType.fixed,
       selectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,
@@ -132,84 +164,129 @@ class AppTheme {
       ),
     ),
 
-    // FAB with red-purple accent
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: accentRedPurple,
-      foregroundColor: textWhite,
-      elevation: 8,
-      focusElevation: 10,
-      hoverElevation: 10,
-      highlightElevation: 14,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    // Navigation Bar (Material 3)
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: cardBackground,
+      indicatorColor: primaryPurple.withOpacity(0.2),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: primaryPurple,
+          );
+        }
+        return GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: textMuted,
+        );
+      }),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: primaryPurple, size: 24);
+        }
+        return const IconThemeData(color: textMuted, size: 24);
+      }),
     ),
 
-    // Button themes with reddish purple accents
+    // FAB Theme
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: primaryPurple,
+      foregroundColor: textWhite,
+      elevation: 4,
+      focusElevation: 6,
+      hoverElevation: 6,
+      highlightElevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+
+    // Elevated Button
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: textWhite,
-        backgroundColor: accentRedPurple,
-        elevation: 4,
-        shadowColor: Colors.black54,
+        backgroundColor: primaryPurple,
+        elevation: 0,
+        shadowColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
         textStyle: GoogleFonts.inter(
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.1,
+          letterSpacing: -0.2,
         ),
       ),
     ),
 
+    // Outlined Button
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: coralRed,
+        foregroundColor: primaryPurple,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        side: BorderSide(color: coralRed, width: 1.5),
+        side: BorderSide(color: primaryPurple, width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
         textStyle: GoogleFonts.inter(
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.1,
+          letterSpacing: -0.2,
         ),
       ),
     ),
 
+    // Text Button
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: coralRed,
+        foregroundColor: primaryPurple,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         textStyle: GoogleFonts.inter(
           fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
     ),
 
-    // Typography with white and gray text
+    // Filled Button
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        foregroundColor: textWhite,
+        backgroundColor: primaryPurple,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+      ),
+    ),
+
+    // Typography
     textTheme: _buildDarkTextTheme(),
 
-    // Input decoration with reddish purple theme
-    inputDecorationTheme: InputDecorationThemeData(
-      fillColor: cardMediumPurple,
+    // Input Decoration
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: cardBackgroundElevated,
       filled: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
-        borderSide: BorderSide(color: borderPurple, width: 1),
+        borderSide: BorderSide(color: borderDefault, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
-        borderSide: BorderSide(color: borderPurple, width: 1),
+        borderSide: BorderSide(color: borderDefault, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
-        borderSide: BorderSide(color: coralRed, width: 2),
+        borderSide: BorderSide(color: primaryPurple, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -220,75 +297,77 @@ class AppTheme {
         borderSide: BorderSide(color: errorColor, width: 2),
       ),
       labelStyle: GoogleFonts.inter(
-        color: textMediumGray,
+        color: textMuted,
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
       hintStyle: GoogleFonts.inter(
-        color: textDisabledGray,
+        color: textSubtle,
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
       floatingLabelStyle: GoogleFonts.inter(
-        color: coralRed,
+        color: primaryPurple,
         fontSize: 12,
         fontWeight: FontWeight.w500,
       ),
     ),
 
-    // Switch theme with reddish purple accents
+    // Switch
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return coralRed;
-        return textDisabledGray;
+        if (states.contains(WidgetState.selected)) return primaryPurple;
+        return textMuted;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected))
-          return coralRed.withAlpha(77);
-        return textDisabledGray.withAlpha(77);
+        if (states.contains(WidgetState.selected)) {
+          return primaryPurple.withOpacity(0.3);
+        }
+        return textSubtle.withOpacity(0.3);
       }),
     ),
 
-    // Checkbox theme
+    // Checkbox
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return coralRed;
+        if (states.contains(WidgetState.selected)) return primaryPurple;
         return Colors.transparent;
       }),
       checkColor: WidgetStateProperty.all(textWhite),
-      side: BorderSide(color: borderPurple, width: 1.5),
+      side: BorderSide(color: borderDefault, width: 1.5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
 
-    // Radio theme
+    // Radio
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return coralRed;
-        return textMediumGray;
+        if (states.contains(WidgetState.selected)) return primaryPurple;
+        return textMuted;
       }),
     ),
 
-    // Progress indicator theme
+    // Progress Indicator
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: coralRed,
-      linearTrackColor: borderPurple,
-      circularTrackColor: borderPurple,
+      color: primaryPurple,
+      linearTrackColor: borderDefault,
+      circularTrackColor: borderDefault,
     ),
 
-    // Slider theme
+    // Slider
     sliderTheme: SliderThemeData(
-      activeTrackColor: coralRed,
-      thumbColor: coralRed,
-      overlayColor: coralRed.withAlpha(51),
-      inactiveTrackColor: borderPurple,
+      activeTrackColor: primaryPurple,
+      thumbColor: primaryPurple,
+      overlayColor: primaryPurple.withOpacity(0.2),
+      inactiveTrackColor: borderDefault,
       trackHeight: 4,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
     ),
 
-    // Tab bar theme
-    tabBarTheme: TabBarThemeData(
-      labelColor: coralRed,
-      unselectedLabelColor: textMediumGray,
-      indicatorColor: coralRed,
+    // TabBar
+    tabBarTheme: TabBarTheme(
+      labelColor: primaryPurple,
+      unselectedLabelColor: textMuted,
+      indicatorColor: primaryPurple,
       indicatorSize: TabBarIndicatorSize.label,
       labelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
       unselectedLabelStyle: GoogleFonts.inter(
@@ -297,321 +376,446 @@ class AppTheme {
       ),
     ),
 
-    // Tooltip theme
+    // Chip
+    chipTheme: ChipThemeData(
+      backgroundColor: cardBackgroundElevated,
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: textSecondary,
+      ),
+      side: BorderSide(color: borderSubtle),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    ),
+
+    // Tooltip
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: cardMediumPurple,
+        color: cardBackgroundElevated,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderPurple),
+        border: Border.all(color: borderDefault),
       ),
       textStyle: GoogleFonts.inter(
-        color: textLightGray,
+        color: textPrimary,
         fontSize: 12,
         fontWeight: FontWeight.w400,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     ),
 
-    // SnackBar theme
+    // SnackBar
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: cardDarkBurgundy,
+      backgroundColor: cardBackgroundElevated,
       contentTextStyle: GoogleFonts.inter(
-        color: textLightGray,
+        color: textPrimary,
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
-      actionTextColor: coralRed,
+      actionTextColor: primaryPurple,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       elevation: 8,
     ),
 
-    dialogTheme: DialogThemeData(
-      backgroundColor: cardDarkBurgundy,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+    // Dialog
+    dialogTheme: DialogTheme(
+      backgroundColor: cardBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      elevation: 8,
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: textWhite,
+      ),
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: textSecondary,
+      ),
+    ),
+
+    // Bottom Sheet
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      dragHandleColor: textMuted,
+      dragHandleSize: const Size(40, 4),
+    ),
+
+    // Date Picker
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: cardBackground,
+      headerBackgroundColor: primaryPurple,
+      headerForegroundColor: textWhite,
+      dayForegroundColor: WidgetStateProperty.all(textPrimary),
+      todayForegroundColor: WidgetStateProperty.all(primaryPurple),
+      todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+      todayBorder: BorderSide(color: primaryPurple),
+      dayOverlayColor: WidgetStateProperty.all(primaryPurple.withOpacity(0.1)),
+    ),
+
+    // Time Picker
+    timePickerTheme: TimePickerThemeData(
+      backgroundColor: cardBackground,
+      hourMinuteColor: cardBackgroundElevated,
+      dialBackgroundColor: cardBackgroundElevated,
+      dialHandColor: primaryPurple,
+      entryModeIconColor: primaryPurple,
+    ),
+
+    // Divider
+    dividerTheme: DividerThemeData(
+      color: dividerColor,
+      thickness: 1,
+      space: 1,
+    ),
+
+    // List Tile
+    listTileTheme: ListTileThemeData(
+      tileColor: Colors.transparent,
+      selectedTileColor: primaryPurple.withOpacity(0.1),
+      iconColor: textMuted,
+      textColor: textPrimary,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    ),
+
+    // Icon Theme
+    iconTheme: const IconThemeData(
+      color: textSecondary,
+      size: 24,
+    ),
+
+    // Primary Icon Theme
+    primaryIconTheme: const IconThemeData(
+      color: textWhite,
+      size: 24,
     ),
   );
 
-  /// Light theme (minimal - app focuses on dark theme)
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6366F1), // Indigo
-        brightness: Brightness.light,
-        primary: const Color(0xFF6366F1),
-        secondary: const Color(0xFF8B5CF6), // Purple
-        tertiary: const Color(0xFF06B6D4), // Cyan
-        surface: const Color(0xFFFAFAFA),
-        background: const Color(0xFFFFFBFE),
-        error: const Color(0xFFDC2626),
-      ),
-      scaffoldBackgroundColor: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF1E293B), // Dark slate
-          Color(0xFF334155), // Slate
-          Color(0xFF475569), // Lighter slate
-        ],
-      ).colors.first, // Use first color as fallback
-      appBarTheme: AppBarThemeData(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      textTheme: TextTheme(
-        // Headlines
-        headlineLarge: GoogleFonts.inter(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: const Color(0xFF1F2937),
-        ),
-        headlineMedium: GoogleFonts.inter(
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF1F2937),
-        ),
-        headlineSmall: GoogleFonts.inter(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF1F2937),
-        ),
+  // ============================================================
+  // TEXT THEME
+  // ============================================================
 
-        // Titles
-        titleLarge: GoogleFonts.inter(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF1F2937),
-        ),
-        titleMedium: GoogleFonts.inter(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF1F2937),
-        ),
-        titleSmall: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF1F2937),
-        ),
-
-        // Body text
-        bodyLarge: GoogleFonts.inter(
-          fontSize: 16,
-          fontWeight: FontWeight.normal,
-          color: const Color(0xFF374151),
-        ),
-        bodyMedium: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
-          color: const Color(0xFF374151),
-        ),
-        bodySmall: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-          color: const Color(0xFF6B7280),
-        ),
-
-        // Labels
-        labelLarge: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF374151),
-        ),
-        labelMedium: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF6B7280),
-        ),
-        labelSmall: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF9CA3AF),
-        ),
-      ),
-    );
-  }
-
-  /// Helper method to build dark text theme
   static TextTheme _buildDarkTextTheme() {
     return TextTheme(
-      // Display styles
+      // Display styles - for very large text
       displayLarge: GoogleFonts.inter(
         fontSize: 57,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w700,
         color: textWhite,
-        letterSpacing: -0.25,
+        letterSpacing: -1.5,
         height: 1.12,
       ),
       displayMedium: GoogleFonts.inter(
         fontSize: 45,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.5,
         height: 1.16,
       ),
       displaySmall: GoogleFonts.inter(
         fontSize: 36,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.25,
         height: 1.22,
       ),
 
-      // Headline styles
+      // Headline styles - for section headers
       headlineLarge: GoogleFonts.inter(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.5,
         height: 1.25,
       ),
       headlineMedium: GoogleFonts.inter(
         fontSize: 28,
         fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.25,
         height: 1.29,
       ),
       headlineSmall: GoogleFonts.inter(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.25,
         height: 1.33,
       ),
 
-      // Title styles
+      // Title styles - for cards and list items
       titleLarge: GoogleFonts.inter(
         fontSize: 22,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: textWhite,
-        letterSpacing: 0,
+        letterSpacing: -0.25,
         height: 1.27,
       ),
       titleMedium: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: textLightGray,
-        letterSpacing: 0.15,
+        color: textPrimary,
+        letterSpacing: -0.15,
         height: 1.50,
       ),
       titleSmall: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: textLightGray,
-        letterSpacing: 0.1,
+        color: textPrimary,
+        letterSpacing: -0.1,
         height: 1.43,
       ),
 
-      // Body styles
+      // Body styles - for main content
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: textLightGray,
-        letterSpacing: 0.5,
+        color: textPrimary,
+        letterSpacing: 0.15,
         height: 1.50,
       ),
       bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: textMediumGray,
-        letterSpacing: 0.25,
+        color: textSecondary,
+        letterSpacing: 0.1,
         height: 1.43,
       ),
       bodySmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        color: textMediumGray,
-        letterSpacing: 0.4,
+        color: textMuted,
+        letterSpacing: 0.1,
         height: 1.33,
       ),
 
-      // Label styles
+      // Label styles - for buttons and captions
       labelLarge: GoogleFonts.inter(
         fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: textLightGray,
+        fontWeight: FontWeight.w600,
+        color: textPrimary,
         letterSpacing: 0.1,
         height: 1.43,
       ),
       labelMedium: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: textMediumGray,
-        letterSpacing: 0.5,
+        color: textSecondary,
+        letterSpacing: 0.1,
         height: 1.33,
       ),
       labelSmall: GoogleFonts.inter(
         fontSize: 11,
         fontWeight: FontWeight.w500,
-        color: textDisabledGray,
-        letterSpacing: 0.5,
+        color: textMuted,
+        letterSpacing: 0.1,
         height: 1.45,
       ),
     );
   }
 
-  /// Helper method to build light text theme (minimal)
-  static TextTheme _buildLightTextTheme() {
-    return GoogleFonts.interTextTheme();
+  // ============================================================
+  // LIGHT THEME (Minimal - app focuses on dark theme)
+  // ============================================================
+
+  static ThemeData get lightTheme {
+    return darkTheme; // Always use dark theme for Lucidlog
   }
 
-  /// Helper method to create gradient decoration for backgrounds with reddish purple
+  // ============================================================
+  // HELPER METHODS
+  // ============================================================
+
+  /// Create gradient background for main screens
   static BoxDecoration createGradientBackground() {
-    return BoxDecoration(
+    return const BoxDecoration(
       gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [primaryBurgundy, darkCrimson, backgroundDarkest],
-        stops: [0.0, 0.6, 1.0],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF12101A),
+          backgroundDarkest,
+        ],
       ),
     );
   }
 
-  /// Helper method to create card gradient decoration with reddish purple
-  static BoxDecoration createCardGradient() {
+  /// Create card decoration with subtle border
+  static BoxDecoration createCardDecoration({
+    bool elevated = false,
+    bool hasAccent = false,
+    Color? accentColor,
+  }) {
     return BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [cardDarkBurgundy, cardMediumPurple],
-        stops: [0.0, 1.0],
-      ),
+      color: elevated ? cardBackgroundElevated : cardBackground,
       borderRadius: BorderRadius.circular(16.0),
-      border: Border.all(color: borderPurple.withAlpha(77), width: 1),
+      border: Border.all(
+        color: hasAccent
+            ? (accentColor ?? primaryPurple).withOpacity(0.3)
+            : borderSubtle,
+        width: hasAccent ? 1.5 : 1,
+      ),
     );
   }
 
-  /// Helper method to get success color
+  /// Create accent gradient for buttons and highlights
+  static LinearGradient createAccentGradient() {
+    return const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [primaryPurple, secondaryTeal],
+    );
+  }
+
+  /// Create warm accent gradient
+  static LinearGradient createWarmGradient() {
+    return const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [tertiaryOrange, accentPink],
+    );
+  }
+
+  /// Create stat card decoration
+  static BoxDecoration createStatCardDecoration(Color accentColor) {
+    return BoxDecoration(
+      color: cardBackground,
+      borderRadius: BorderRadius.circular(16.0),
+      border: Border.all(
+        color: accentColor.withOpacity(0.2),
+        width: 1,
+      ),
+    );
+  }
+
+  /// Create glass morphism effect
+  static BoxDecoration createGlassEffect({
+    Color? borderColor,
+    double borderOpacity = 0.1,
+  }) {
+    return BoxDecoration(
+      color: cardBackground.withOpacity(0.8),
+      borderRadius: BorderRadius.circular(16.0),
+      border: Border.all(
+        color: (borderColor ?? textWhite).withOpacity(borderOpacity),
+        width: 1,
+      ),
+    );
+  }
+
+  /// Get color for dream mood
+  static Color getMoodColor(String mood) {
+    switch (mood.toLowerCase()) {
+      case 'happy':
+      case 'joyful':
+      case 'excited':
+        return accentGreen;
+      case 'calm':
+      case 'peaceful':
+      case 'relaxed':
+        return secondaryTeal;
+      case 'sad':
+      case 'melancholy':
+        return Color(0xFF6366F1); // Indigo
+      case 'anxious':
+      case 'stressed':
+        return tertiaryOrange;
+      case 'scared':
+      case 'fearful':
+        return errorColor;
+      case 'confused':
+        return accentYellow;
+      case 'lucid':
+      case 'aware':
+        return primaryPurple;
+      default:
+        return textMuted;
+    }
+  }
+
+  /// Get color for sleep quality
+  static Color getSleepQualityColor(String quality) {
+    switch (quality.toLowerCase()) {
+      case 'excellent':
+        return sleepExcellent;
+      case 'good':
+        return sleepGood;
+      case 'fair':
+        return sleepFair;
+      case 'poor':
+        return sleepPoor;
+      case 'terrible':
+        return sleepTerrible;
+      default:
+        return textMuted;
+    }
+  }
+
+  /// Get color for dream category
+  static Color getDreamCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'lucid':
+        return lucidDreamColor;
+      case 'nightmare':
+        return nightmareColor;
+      case 'recurring':
+        return recurringColor;
+      case 'prophetic':
+        return prophericColor;
+      default:
+        return normalDreamColor;
+    }
+  }
+
+  // Status color getters
   static Color getSuccessColor() => successColor;
-
-  /// Helper method to get warning color
   static Color getWarningColor() => warningColor;
-
-  /// Helper method to get error color
   static Color getErrorColor() => errorColor;
+  static Color getInfoColor() => infoColor;
 
-  /// Helper method to get accent purple color
-  static Color getAccentPurple() => accentPurple;
+  // Accent color getters
+  static Color getAccentPurple() => primaryPurple;
+  static Color getAccentTeal() => secondaryTeal;
+  static Color getAccentOrange() => tertiaryOrange;
 
-  /// Helper method to get accent purple light color
-  static Color getAccentPurpleLight() => accentPurpleLight;
-
+  /// Dream entry gradient
   static BoxDecoration get dreamEntryGradient {
     return BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [primaryBurgundy, darkCrimson, wineRed],
+        colors: [
+          primaryPurple.withOpacity(0.15),
+          secondaryTeal.withOpacity(0.10),
+        ],
       ),
+      borderRadius: BorderRadius.circular(16),
     );
   }
+
+  // Legacy color aliases for backward compatibility
+  static const Color primaryBurgundy = primaryPurple;
+  static const Color wineRed = primaryPurpleLight;
+  static const Color darkCrimson = primaryPurpleDark;
+  static const Color mutedPurple = primaryPurpleMuted;
+  static const Color accentRedPurple = primaryPurple;
+  static const Color coralRed = tertiaryOrange;
+  static const Color softPink = accentPink;
+  static const Color cardDarkBurgundy = cardBackground;
+  static const Color cardMediumPurple = cardBackgroundElevated;
+  static const Color surfaceDarkPurple = cardBackground;
+  static const Color textLightGray = textPrimary;
+  static const Color textMediumGray = textSecondary;
+  static const Color textDisabledGray = textMuted;
+  static const Color borderPurple = borderDefault;
+  static const Color dividerPurple = dividerColor;
+  static const Color primaryDarkPurple = primaryPurple;
+  static const Color primaryDarkBlue = primaryPurpleDark;
+  static const Color accentPurple = primaryPurple;
+  static const Color accentPurpleLight = primaryPurpleLight;
+  static const Color cardDarkPurple = cardBackground;
 }
