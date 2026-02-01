@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/dream.dart';
 import '../services/dream_service.dart';
 import '../services/logger_service.dart';
+import '../services/offline_service.dart';
 
 /// Dream state provider
 /// Manages dreams data and provides reactive updates
@@ -62,8 +63,64 @@ class DreamProvider extends ChangeNotifier {
 
   /// Initialize and load dreams
   Future<void> initialize() async {
+    // Initialize offline service
+    await offlineService.initialize();
+
+    // Set up connectivity change handler
+    offlineService.onConnectivityChanged = _handleConnectivityChange;
+    offlineService.onPendingOperationsSync = _syncPendingOperations;
+
+    // Load dreams (with offline fallback)
     await loadDreams();
     _setupRealtimeSubscription();
+  }
+
+  void _handleConnectivityChange(bool isOnline) {
+    log.info('Connectivity changed: ${isOnline ? "Online" : "Offline"}');
+    notifyListeners();
+  }
+
+  Future<void> _syncPendingOperations() async {
+    if (!offlineService.hasPendingOperations) return;
+
+    log.info('Syncing ${offlineService.pendingOperationsCount} pending operations');
+
+    final operations = offlineService.getPendingOperations();
+
+    for (final op in operations) {
+      try {
+        switch (op.type) {
+          case OfflineOperationType.createDream:
+            await _dreamService.createDream(
+              content: op.data['content'] as String,
+              title: op.data['title'] as String?,
+              mood: op.data['mood'] as String?,
+              tags: (op.data['tags'] as List?)?.cast<String>(),
+            );
+            break;
+          case OfflineOperationType.updateDream:
+            await _dreamService.updateDream(
+              op.data['dreamId'] as String,
+              op.data['updates'] as Map<String, dynamic>,
+            );
+            break;
+          case OfflineOperationType.deleteDream:
+            await _dreamService.deleteDream(op.data['dreamId'] as String);
+            break;
+          case OfflineOperationType.saveSleepSession:
+            // Handle sleep session sync if needed
+            break;
+        }
+
+        await offlineService.removeOperation(op.id);
+        log.debug('Synced operation: ${op.type.name}');
+      } catch (e) {
+        log.error('Failed to sync operation: ${op.type.name}', e);
+      }
+    }
+
+    // Reload dreams after sync
+    await loadDreams();
   }
 
   /// Load all dreams for the current user
@@ -78,21 +135,46 @@ class DreamProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final dreamsData = await _dreamService.getUserDreams(
-        limit: limit,
-        dreamType: dreamType,
-        mood: mood,
-        startDate: startDate,
-        endDate: endDate,
-      );
+      // Check if we're online
+      if (offlineService.isOnline) {
+        final dreamsData = await _dreamService.getUserDreams(
+          limit: limit,
+          dreamType: dreamType,
+          mood: mood,
+          startDate: startDate,
+          endDate: endDate,
+        );
 
-      _dreams = dreamsData.map((data) => Dream.fromJson(data)).toList();
+        _dreams = dreamsData.map((data) => Dream.fromJson(data)).toList();
+
+        // Cache for offline use
+        await offlineService.cacheDreamsForOffline(dreamsData);
+
+        log.info('Loaded ${_dreams.length} dreams from server');
+      } else {
+        // Load from offline cache
+        final cachedData = await offlineService.getOfflineCachedDreams();
+        if (cachedData != null) {
+          _dreams = cachedData.map((data) => Dream.fromJson(data)).toList();
+          log.info('Loaded ${_dreams.length} dreams from offline cache');
+        } else {
+          _setError('No cached dreams available offline');
+        }
+      }
+
       _organizeDreamsByDate();
-
-      log.info('Loaded ${_dreams.length} dreams');
     } catch (e) {
-      _setError('Failed to load dreams: ${e.toString()}');
-      log.error('Failed to load dreams', e);
+      // Try offline cache as fallback
+      log.warning('Online load failed, trying offline cache');
+      final cachedData = await offlineService.getOfflineCachedDreams();
+      if (cachedData != null) {
+        _dreams = cachedData.map((data) => Dream.fromJson(data)).toList();
+        _organizeDreamsByDate();
+        log.info('Loaded ${_dreams.length} dreams from offline cache (fallback)');
+      } else {
+        _setError('Failed to load dreams: ${e.toString()}');
+        log.error('Failed to load dreams', e);
+      }
     } finally {
       _setLoading(false);
     }
