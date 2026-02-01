@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 
-import '../presentation/advanced_analytics_dashboard/advanced_analytics_dashboard.dart';
 import '../presentation/auth/auth_screen.dart';
 import '../presentation/calendar_view/calendar_view.dart';
 import '../presentation/dream_detail_view/dream_detail_view.dart';
@@ -10,19 +9,14 @@ import '../presentation/dream_insights_dashboard/dream_insights_dashboard.dart';
 import '../presentation/dream_journal_home/dream_journal_home.dart';
 import '../presentation/export_sharing_center/export_sharing_center.dart';
 import '../presentation/main_navigation/main_navigation.dart';
-import '../presentation/public_dreams_feed/public_dreams_feed.dart';
 import '../presentation/settings_and_profile/settings_and_profile.dart';
 import '../presentation/sleep_quality_tracking/sleep_quality_tracking.dart';
 import '../presentation/smart_notifications_management/smart_notifications_management.dart';
 import '../presentation/subscription_checkout/subscription_checkout.dart';
 import '../presentation/subscription_management/subscription_management.dart';
 import '../presentation/therapeutic_insights_hub/therapeutic_insights_hub.dart';
-import '../services/auth_service.dart';
-
-// REMOVED FOR MVP: Advanced Analytics Dashboard
-//
-// REMOVED FOR MVP: Public Dreams Feed
-//
+import '../providers/auth_provider.dart';
+import '../theme/app_theme.dart';
 
 class AppRoutes {
   static const String authWrapper = '/';
@@ -32,8 +26,6 @@ class AppRoutes {
   static const String dreamDetailView = '/dream-detail-view';
   static const String calendarView = '/calendar-view';
   static const String dreamInsightsDashboard = '/dream-insights-dashboard';
-  // REMOVED FOR MVP: static const String publicDreamsFeed = '/public-dreams-feed';
-  // REMOVED FOR MVP: static const String advancedAnalyticsDashboard = '/advanced-analytics-dashboard';
   static const String settingsAndProfile = '/settings-and-profile';
   static const String sleepQualityTracking = '/sleep-quality-tracking';
   static const String smartNotificationsManagement =
@@ -43,7 +35,6 @@ class AppRoutes {
   static const String subscriptionCheckout = '/subscription-checkout';
   static const String subscriptionManagement = '/subscription-management';
 
-  // Changed initial route to AuthWrapper for mandatory authentication
   static const String initial = AppRoutes.authWrapper;
 
   static Map<String, WidgetBuilder> get routes => {
@@ -54,13 +45,14 @@ class AppRoutes {
     dreamDetailView: (context) => const DreamDetailView(),
     calendarView: (context) => const CalendarView(),
     dreamInsightsDashboard: (context) => const DreamInsightsDashboard(),
-    // REMOVED FOR MVP: publicDreamsFeed and advancedAnalyticsDashboard
     settingsAndProfile: (context) => const SettingsAndProfile(),
     sleepQualityTracking: (context) => const SleepQualityTracking(),
     smartNotificationsManagement: (context) =>
         const SmartNotificationsManagement(),
     therapeuticInsightsHub: (context) => const TherapeuticInsightsHub(),
     exportSharingCenter: (context) => const ExportSharingCenter(),
+    subscriptionCheckout: (context) => const SubscriptionCheckout(),
+    subscriptionManagement: (context) => const SubscriptionManagement(),
   };
 }
 
@@ -69,25 +61,48 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
-
-    return StreamBuilder<AuthState>(
-      stream: authService.authStateStream,
-      builder: (context, snapshot) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
         // Show loading while checking auth state
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
+        if (auth.isLoading) {
+          return Scaffold(
+            backgroundColor: AppTheme.backgroundDarkest,
             body: Center(
-              child: CircularProgressIndicator(color: Colors.purple),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.primaryDarkPurple.withAlpha(50),
+                    ),
+                    child: Icon(
+                      Icons.nightlight_rounded,
+                      size: 48,
+                      color: AppTheme.accentPurpleLight,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  CircularProgressIndicator(
+                    color: AppTheme.accentPurple,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading your dreams...',
+                    style: TextStyle(
+                      color: AppTheme.textMediumGray,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
-        // Check if user is authenticated from AuthState
-        final isAuthenticated = snapshot.data?.session != null;
-
-        if (isAuthenticated) {
+        // Navigate based on auth state
+        if (auth.isAuthenticated) {
           return const MainNavigation();
         } else {
           return const AuthScreen();

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import '../../models/dream.dart';
-import '../../services/dream_service.dart';
-import '../../services/supabase_service.dart';
+import '../../providers/dream_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_icon_widget.dart';
 import './widgets/clarity_score_widget.dart';
@@ -205,43 +204,54 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
 
   Future<void> _saveDream() async {
     if (_contentController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please add dream content')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add dream content')),
+      );
       return;
     }
 
     setState(() => _isSaving = true);
 
     try {
-      final dream = Dream(
-        id: '',
-        userId: SupabaseService.instance.client.auth.currentUser!.id,
-        title: _titleController.text.isEmpty
-            ? 'Untitled Dream'
-            : _titleController.text,
+      final dreamProvider = context.read<DreamProvider>();
+
+      // Determine sleep quality string
+      String sleepQualityStr;
+      if (_sleepQuality <= 2.5) {
+        sleepQualityStr = 'poor';
+      } else if (_sleepQuality <= 5.0) {
+        sleepQualityStr = 'fair';
+      } else if (_sleepQuality <= 7.5) {
+        sleepQualityStr = 'good';
+      } else {
+        sleepQualityStr = 'excellent';
+      }
+
+      final dream = await dreamProvider.createDream(
         content: _contentController.text,
+        title: _titleController.text.isEmpty ? null : _titleController.text,
         mood: _selectedMood,
-        tags: _selectedTags,
-        dreamDate: _dreamDate,
-        sleepQuality: _sleepQuality.toStringAsFixed(1),
+        tags: _selectedTags.isEmpty ? null : _selectedTags,
+        sleepQuality: sleepQualityStr,
         clarityScore: _clarityScore.round(),
-        isLucid: false,
-        isNightmare: false,
-        isRecurring: false,
-        audioRecordingPath: _audioRecordingPath,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        performAIAnalysis: true,
       );
 
-      await DreamService().createDream(content: dream.content);
-
-      if (mounted) {
-        Navigator.pop(context);
+      if (dream != null && mounted) {
+        Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Dream saved successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Dream saved and analyzed!'),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(dreamProvider.error ?? 'Failed to save dream'),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -250,12 +260,15 @@ class _DreamEntryCreationState extends State<DreamEntryCreation>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving dream: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 

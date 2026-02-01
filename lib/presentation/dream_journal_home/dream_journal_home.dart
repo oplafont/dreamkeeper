@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import '../../models/dream.dart';
-import '../../services/auth_service.dart';
-import '../../services/dream_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/dream_provider.dart';
+import '../../theme/app_theme.dart';
 import './widgets/dream_card_widget.dart';
 import './widgets/empty_state_widget.dart';
 import './widgets/voice_recording_widget.dart';
@@ -17,20 +19,20 @@ class DreamJournalHome extends StatefulWidget {
 }
 
 class _DreamJournalHomeState extends State<DreamJournalHome> {
-  final _authService = AuthService();
-  final _dreamService = DreamService();
   final _searchController = TextEditingController();
-
-  List<Dream> _dreams = [];
-  Map<String, dynamic>? _userProfile;
-  Map<String, dynamic>? _dreamStats;
-  bool _isLoading = true;
   String _searchQuery = '';
+  bool _showSearch = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    // Load dreams when the screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dreamProvider = context.read<DreamProvider>();
+      if (!dreamProvider.hasDreams) {
+        dreamProvider.loadDreams();
+      }
+    });
   }
 
   @override
@@ -39,51 +41,16 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
     super.dispose();
   }
 
-  Future<void> _loadUserData() async {
-    if (!_authService.isAuthenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.authWrapper);
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // Load user profile, dreams, and statistics
-      final futures = await Future.wait([
-        _authService.getUserProfile(),
-        _dreamService.getUserDreams(limit: 20),
-        _dreamService.getDreamStatistics(),
-      ]);
-
-      setState(() {
-        _userProfile = futures[0] as Map<String, dynamic>?;
-        _dreams =
-            (futures[1] as List<Map<String, dynamic>>)
-                .map((json) => Dream.fromJson(json))
-                .toList();
-        _dreamStats = futures[2] as Map<String, dynamic>?;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showError('Failed to load data: ${e.toString()}');
-    }
-  }
-
-  Future<void> _refreshData() async {
-    await _loadUserData();
-  }
-
   void _onSearchChanged(String query) {
     setState(() {
       _searchQuery = query.toLowerCase();
     });
   }
 
-  List<Dream> get _filteredDreams {
-    if (_searchQuery.isEmpty) return _dreams;
+  List<Dream> _filterDreams(List<Dream> dreams) {
+    if (_searchQuery.isEmpty) return dreams;
 
-    return _dreams.where((dream) {
+    return dreams.where((dream) {
       return dream.displayTitle.toLowerCase().contains(_searchQuery) ||
           dream.content.toLowerCase().contains(_searchQuery) ||
           dream.tags.any((tag) => tag.toLowerCase().contains(_searchQuery)) ||
@@ -92,35 +59,30 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
   }
 
   Future<void> _onVoiceRecordingComplete(String transcription) async {
-    try {
-      await _dreamService.createDream(
-        content: transcription,
-        title: 'Voice Dream Entry',
-      );
+    final dreamProvider = context.read<DreamProvider>();
 
-      // Refresh dreams list
-      await _refreshData();
+    final dream = await dreamProvider.createDream(
+      content: transcription,
+      title: 'Voice Dream Entry',
+    );
 
+    if (dream != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Dream recorded and analyzed successfully!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text('Dream recorded and analyzed!'),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
         ),
       );
-    } catch (e) {
-      _showError('Failed to save dream: ${e.toString()}');
+    } else if (mounted) {
+      _showError(dreamProvider.error ?? 'Failed to save dream');
     }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: AppTheme.darkTheme.textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textWhite,
-          ),
-        ),
+        content: Text(message),
         backgroundColor: AppTheme.errorColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -129,12 +91,8 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
   }
 
   Future<void> _signOut() async {
-    try {
-      await _authService.signOut();
-      Navigator.pushReplacementNamed(context, AppRoutes.authWrapper);
-    } catch (e) {
-      _showError('Failed to sign out: ${e.toString()}');
-    }
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.signOut();
   }
 
   @override
@@ -154,220 +112,238 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
         ),
         actions: [
           IconButton(
+            icon: Icon(
+              _showSearch ? Icons.close : Icons.search,
+              color: AppTheme.textWhite,
+            ),
+            onPressed: () {
+              setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchQuery = '';
+                  _searchController.clear();
+                }
+              });
+            },
+            tooltip: _showSearch ? 'Close Search' : 'Search',
+          ),
+          IconButton(
             icon: Icon(Icons.logout, color: AppTheme.textWhite),
             onPressed: _signOut,
             tooltip: 'Sign Out',
           ),
         ],
       ),
-      body:
-          _isLoading
-              ? Center(
-                child: CircularProgressIndicator(color: AppTheme.accentPurple),
-              )
-              : RefreshIndicator(
-                onRefresh: _refreshData,
-                color: AppTheme.accentPurple,
-                backgroundColor: AppTheme.cardDarkPurple,
-                child: CustomScrollView(
-                  slivers: [
-                    // Simplified Greeting with clear stats
-                    SliverToBoxAdapter(
-                      child: Container(
-                        margin: EdgeInsets.all(4.w),
-                        padding: EdgeInsets.all(4.w),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardDarkPurple,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppTheme.borderPurple.withAlpha(128),
-                            width: 1,
-                          ),
+      body: Consumer2<AuthProvider, DreamProvider>(
+        builder: (context, auth, dreamProvider, _) {
+          if (dreamProvider.isLoading && dreamProvider.dreams.isEmpty) {
+            return Center(
+              child: CircularProgressIndicator(color: AppTheme.accentPurple),
+            );
+          }
+
+          final filteredDreams = _filterDreams(dreamProvider.dreams);
+
+          return RefreshIndicator(
+            onRefresh: () => dreamProvider.loadDreams(),
+            color: AppTheme.accentPurple,
+            backgroundColor: AppTheme.cardDarkPurple,
+            child: CustomScrollView(
+              slivers: [
+                // Greeting Header with Stats
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: EdgeInsets.all(4.w),
+                    padding: EdgeInsets.all(4.w),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardDarkPurple,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppTheme.borderPurple.withAlpha(128),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome back, ${auth.displayName}!',
+                          style: AppTheme.darkTheme.textTheme.headlineSmall
+                              ?.copyWith(
+                                color: AppTheme.textWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        SizedBox(height: 1.h),
+                        Row(
                           children: [
-                            Text(
-                              'Welcome back!',
-                              style: AppTheme.darkTheme.textTheme.headlineSmall
-                                  ?.copyWith(
-                                    color: AppTheme.textWhite,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                            _buildStatItem(
+                              'Dreams',
+                              '${dreamProvider.dreamCount}',
                             ),
-                            SizedBox(height: 1.h),
-                            Row(
-                              children: [
-                                _buildStatItem('Dreams', '${_dreams.length}'),
-                                SizedBox(width: 4.w),
-                                _buildStatItem(
-                                  'Streak',
-                                  '${_dreamStats?['current_streak'] ?? 0} days',
-                                ),
-                              ],
+                            SizedBox(width: 4.w),
+                            _buildStatItem(
+                              'Lucid',
+                              '${dreamProvider.lucidDreams.length}',
                             ),
+                            SizedBox(width: 4.w),
+                            if (dreamProvider.averageClarityScore > 0)
+                              _buildStatItem(
+                                'Clarity',
+                                '${dreamProvider.averageClarityScore.toStringAsFixed(1)}',
+                              ),
                           ],
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Voice Recording Button
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                    child: VoiceRecordingWidget(
+                      onRecordingComplete: _onVoiceRecordingComplete,
+                    ),
+                  ),
+                ),
+
+                // Text Entry Button
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          AppRoutes.dreamEntryCreation,
+                        );
+                        if (result == true) {
+                          dreamProvider.loadDreams();
+                        }
+                      },
+                      icon: Icon(Icons.edit, color: AppTheme.textWhite),
+                      label: Text(
+                        'Write Dream Instead',
+                        style: TextStyle(
+                          color: AppTheme.textWhite,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.cardMediumPurple,
+                        foregroundColor: AppTheme.textWhite,
+                        padding: EdgeInsets.symmetric(vertical: 1.5.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(
+                          color: AppTheme.borderPurple,
+                          width: 1,
+                        ),
                       ),
                     ),
+                  ),
+                ),
 
-                    // Big Voice Recording Button - Main Feature
-                    SliverToBoxAdapter(
-                      child: Container(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 4.w,
-                          vertical: 2.h,
-                        ),
-                        child: VoiceRecordingWidget(
-                          onRecordingComplete: _onVoiceRecordingComplete,
+                // Search Bar (when active)
+                if (_showSearch)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        autofocus: true,
+                        style: TextStyle(color: AppTheme.textWhite),
+                        decoration: InputDecoration(
+                          hintText: 'Search dreams...',
+                          hintStyle: TextStyle(color: AppTheme.textMediumGray),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppTheme.textMediumGray,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: AppTheme.textMediumGray,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onSearchChanged('');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: AppTheme.cardMediumPurple,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.borderPurple),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.borderPurple),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: AppTheme.accentPurpleLight,
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
                     ),
+                  ),
 
-                    // Alternative Action Button - Text Entry
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 4.w,
-                          vertical: 1.h,
+                // Section Header
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 1.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recent Dreams (${filteredDreams.length})',
+                          style: AppTheme.darkTheme.textTheme.titleMedium
+                              ?.copyWith(
+                                color: AppTheme.textWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
+                        if (dreamProvider.isLoading)
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.accentPurpleLight,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Dreams List or Empty State
+                filteredDreams.isEmpty
+                    ? SliverFillRemaining(
+                        child: EmptyStateWidget(
+                          onGetStarted: () {
                             Navigator.pushNamed(
                               context,
                               AppRoutes.dreamEntryCreation,
                             );
                           },
-                          icon: Icon(Icons.edit, color: AppTheme.textWhite),
-                          label: Text(
-                            'Write Dream Instead',
-                            style: TextStyle(
-                              color: AppTheme.textWhite,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.cardMediumPurple,
-                            foregroundColor: AppTheme.textWhite,
-                            padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            side: BorderSide(
-                              color: AppTheme.borderPurple,
-                              width: 1,
-                            ),
-                          ),
                         ),
-                      ),
-                    ),
-
-                    // Simple Search (only when needed)
-                    if (_searchQuery.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 4.w,
-                            vertical: 1.h,
-                          ),
-                          child: TextField(
-                            onChanged: _onSearchChanged,
-                            style: TextStyle(color: AppTheme.textWhite),
-                            decoration: InputDecoration(
-                              hintText: 'Search dreams...',
-                              hintStyle: TextStyle(
-                                color: AppTheme.textMediumGray,
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: AppTheme.textMediumGray,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  Icons.clear,
-                                  color: AppTheme.textMediumGray,
-                                ),
-                                onPressed: () => _onSearchChanged(''),
-                              ),
-                              filled: true,
-                              fillColor: AppTheme.cardMediumPurple,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppTheme.borderPurple,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppTheme.borderPurple,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppTheme.accentPurpleLight,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // Section Header
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 1.h),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Recent Dreams (${_filteredDreams.length})',
-                              style: AppTheme.darkTheme.textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: AppTheme.textWhite,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            if (_dreams.isNotEmpty)
-                              TextButton(
-                                onPressed:
-                                    () => _onSearchChanged(
-                                      _searchQuery.isEmpty ? ' ' : '',
-                                    ),
-                                child: Text(
-                                  _searchQuery.isEmpty ? 'Search' : 'Clear',
-                                  style: TextStyle(
-                                    color: AppTheme.accentPurpleLight,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Dreams List or Empty State
-                    _filteredDreams.isEmpty
-                        ? SliverFillRemaining(
-                          child: EmptyStateWidget(
-                            onGetStarted: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.dreamEntryCreation,
-                              );
-                            },
-                          ),
-                        )
-                        : SliverList(
-                          delegate: SliverChildBuilderDelegate((
-                            context,
-                            index,
-                          ) {
-                            final dream = _filteredDreams[index];
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final dream = filteredDreams[index];
                             return Container(
                               margin: EdgeInsets.symmetric(
                                 horizontal: 4.w,
@@ -375,23 +351,31 @@ class _DreamJournalHomeState extends State<DreamJournalHome> {
                               ),
                               child: DreamCardWidget(
                                 dream: dream,
-                                onTap: () {
-                                  Navigator.pushNamed(
+                                onTap: () async {
+                                  dreamProvider.selectDream(dream);
+                                  final result = await Navigator.pushNamed(
                                     context,
                                     AppRoutes.dreamDetailView,
                                     arguments: dream.id,
                                   );
+                                  if (result == true) {
+                                    dreamProvider.loadDreams();
+                                  }
                                 },
                               ),
                             );
-                          }, childCount: _filteredDreams.length),
+                          },
+                          childCount: filteredDreams.length,
                         ),
+                      ),
 
-                    // Bottom padding
-                    SliverToBoxAdapter(child: SizedBox(height: 10.h)),
-                  ],
-                ),
-              ),
+                // Bottom padding
+                SliverToBoxAdapter(child: SizedBox(height: 10.h)),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

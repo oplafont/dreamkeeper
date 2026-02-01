@@ -160,9 +160,7 @@ class OpenAIClient {
 
       final response = await createChatCompletion(
         messages: messages,
-        model: 'gpt-5', // Higher reasoning for insights
-        reasoningEffort: 'high',
-        verbosity: 'medium',
+        model: 'gpt-4o', // Higher reasoning for insights
       );
 
       return response.text;
@@ -180,8 +178,7 @@ class OpenAIClient {
     Uint8List? imageBytes,
     String promptText =
         'Analyze this dream-related image and describe any symbols, emotions, or themes you observe:',
-    String model = 'gpt-5',
-    String? reasoningEffort,
+    String model = 'gpt-4o',
   }) async {
     try {
       if (imageUrl == null && imageBytes == null) {
@@ -214,10 +211,6 @@ class OpenAIClient {
             .toList(),
       };
 
-      if (model.startsWith('gpt-5') && reasoningEffort != null) {
-        requestData['reasoning_effort'] = reasoningEffort;
-      }
-
       final response = await dio.post('/chat/completions', data: requestData);
 
       final text = response.data['choices'][0]['message']['content'];
@@ -236,13 +229,11 @@ class OpenAIClient {
   // NOTE: These are kept for other features but dream analysis now uses Edge Function
   // =============================================================================
 
-  /// Standard chat completion with GPT-5 support
+  /// Standard chat completion with GPT-4o support
   Future<Completion> createChatCompletion({
     required List<Message> messages,
-    String model = 'gpt-5-mini',
+    String model = 'gpt-4o-mini',
     Map<String, dynamic>? options,
-    String? reasoningEffort,
-    String? verbosity,
   }) async {
     try {
       final requestData = <String, dynamic>{
@@ -256,10 +247,8 @@ class OpenAIClient {
       if (options != null) {
         final filteredOptions = Map<String, dynamic>.from(options);
 
-        // For GPT-5 models, remove unsupported parameters
-        if (model.startsWith('gpt-5') ||
-            model.startsWith('o3') ||
-            model.startsWith('o4')) {
+        // For reasoning models (o1, o3), remove unsupported parameters
+        if (model.startsWith('o1') || model.startsWith('o3')) {
           filteredOptions.removeWhere(
             (key, value) => [
               'temperature',
@@ -270,7 +259,7 @@ class OpenAIClient {
             ].contains(key),
           );
 
-          // Convert max_tokens to max_completion_tokens for GPT-5
+          // Convert max_tokens to max_completion_tokens for reasoning models
           if (filteredOptions.containsKey('max_tokens')) {
             filteredOptions['max_completion_tokens'] = filteredOptions.remove(
               'max_tokens',
@@ -279,15 +268,6 @@ class OpenAIClient {
         }
 
         requestData.addAll(filteredOptions);
-      }
-
-      // Add GPT-5 specific parameters
-      if (model.startsWith('gpt-5') ||
-          model.startsWith('o3') ||
-          model.startsWith('o4')) {
-        if (reasoningEffort != null)
-          requestData['reasoning_effort'] = reasoningEffort;
-        if (verbosity != null) requestData['verbosity'] = verbosity;
       }
 
       final response = await dio.post('/chat/completions', data: requestData);
@@ -302,13 +282,11 @@ class OpenAIClient {
     }
   }
 
-  /// Streams a text response with support for new model parameters
+  /// Streams a text response
   Stream<StreamCompletion> streamChatCompletion({
     required List<Message> messages,
-    String model = 'gpt-5-mini',
+    String model = 'gpt-4o-mini',
     Map<String, dynamic>? options,
-    String? reasoningEffort,
-    String? verbosity,
   }) async* {
     try {
       final requestData = <String, dynamic>{
@@ -321,9 +299,8 @@ class OpenAIClient {
 
       if (options != null) {
         final filteredOptions = Map<String, dynamic>.from(options);
-        if (model.startsWith('gpt-5') ||
-            model.startsWith('o3') ||
-            model.startsWith('o4')) {
+        // For reasoning models, remove unsupported parameters
+        if (model.startsWith('o1') || model.startsWith('o3')) {
           filteredOptions.removeWhere(
             (key, value) => [
               'temperature',
@@ -340,15 +317,6 @@ class OpenAIClient {
           }
         }
         requestData.addAll(filteredOptions);
-      }
-
-      // Add GPT-5 specific parameters
-      if (model.startsWith('gpt-5') ||
-          model.startsWith('o3') ||
-          model.startsWith('o4')) {
-        if (reasoningEffort != null)
-          requestData['reasoning_effort'] = reasoningEffort;
-        if (verbosity != null) requestData['verbosity'] = verbosity;
       }
 
       final response = await dio.post(
@@ -391,17 +359,13 @@ class OpenAIClient {
   /// A more user-friendly wrapper for streaming that just yields content strings
   Stream<String> streamContentOnly({
     required List<Message> messages,
-    String model = 'gpt-5-mini',
+    String model = 'gpt-4o-mini',
     Map<String, dynamic>? options,
-    String? reasoningEffort,
-    String? verbosity,
   }) async* {
     await for (final chunk in streamChatCompletion(
       messages: messages,
       model: model,
       options: options,
-      reasoningEffort: reasoningEffort,
-      verbosity: verbosity,
     )) {
       if (chunk.content.isNotEmpty) {
         yield chunk.content;
